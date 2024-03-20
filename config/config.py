@@ -17,7 +17,7 @@ class TestingConfig(Config):
     DB_USER = os.getenv('pDB_USER')
     DB_PASSWORD = os.getenv('pDB_PASSWORD')
     DB_HOST = '127.0.0.1'
-    DB_PORT = int('5432')
+    DB_PORT = int(os.getenv('DB_PORT', 5432))
 
 
 class ProductionConfig(Config):
@@ -27,6 +27,4 @@ class ProductionConfig(Config):
     DB_USER = os.getenv('DB_USER')
     DB_PASSWORD = os.getenv('DB_PASSWORD')
     DB_HOST = os.getenv('DB_HOST')
-    DB_PORT = int(os.getenv('DB_PORT'))
-
-
+    DB_PORT = int(os.getenv('DB_PORT', 5432))
