@@ -12,10 +12,15 @@ jobs:
           name: Install Dependencies
           command: |
             pip install -r requirements.txt
+      - run:
+          name: Set FLASK_ENV
+          command: echo "FLASK_ENV=testing" >> $BASH_ENV
+
 
       - run:
           name: Run Tests with Coverage
           command: |
+            source $BASH_ENV  # Source the environment variables
             coverage run -m unittest discover
             
 
