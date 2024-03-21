@@ -10,9 +10,9 @@ jobs:
       # Set environment variables for database connection
       DATABASE_HOST: localhost
       DATABASE_PORT: 5432
-      DATABASE_NAME: ${DB_NAME}
-      DATABASE_USER: ${DB_USER}
-      DATABASE_PASSWORD: ${DB_PASSWORD}
+      DATABASE_NAME: testdb
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: phuier@200
 
     steps:
       - checkout
