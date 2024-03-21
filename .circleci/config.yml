@@ -2,53 +2,21 @@ version: 2.1
 
 jobs:
   build:
-    docker:
-      - image: circleci/python:3.9
 
-    environment:
-      FLASK_ENV : testing
-      DB_URL: $DB_URL
-      DB_USERNAME: $DB_USER
-      DB_PASSWORD: $DB_PASSWORD
-      DB_NAME : $DB_NAME
-      DB_HOST : localhost
-      pDB_PORT : 5432
+    # Primary container image where all commands run
+    docker:
+      - image: cimg/python:3.10
+        environment:
+          TEST_DATABASE_URL: postgresql://postgres@localhost/testdb
+
+    # Service container image
+      - image: cimg/postgres:14.0
+        environment:
+          POSTGRES_USER: postgres
 
     steps:
       - checkout
-      - run:
-          name: Print current directory
-          command: pwd
-      - run:
-          name: List files in the directory
-          command: ls -la
-
-      - run:
-          name: Install dependencies
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y python3-dev libpq-dev  # Install PostgreSQL dependencies
-            pip install -r requirements.txt
-      
-
-      - run:
-          name: Set up database
-          command: |
-            
-            python run.py 
-            
-
-      - run:
-          name: Run Flask application
-          command: |
-            # Start the Flask application
-            python run.py 
-
-      - run:
-          name: Run tests
-          command: |
-            # Wait for Flask application to start
-            sleep 5  # Adjust the time according to your application's startup time
-            # Run tests against the running Flask application
-            python -m unittest discover -s tests/
-
+      - run: sudo apt-get update
+      - run: sudo apt-get install postgresql-client python3-pip  # Install PostgreSQL client and Python3 pip
+      - run: pip3 install psycopg2-binary  # Install psycopg2 for Python PostgreSQL interaction
+      - run: python3 models.py  # Run your database initialization script
