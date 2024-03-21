@@ -23,7 +23,7 @@ jobs:
       # Run your Python tests
       - run:
           name: Run Python tests
-          command: python test_my_app.py
+          command: python tests/test_app.py
 
 workflows:
   version: 2
