@@ -3,34 +3,34 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: python:3.11
+      - image: circleci/python:3.9
 
     steps:
       - checkout
 
+
       - run:
-          name: Install Dependencies
+          name: Install dependencies
           command: |
+            sudo apt-get install python3-dev libpq-dev  # Install PostgreSQL dependencies
             pip install -r requirements.txt
-      - run:
-          name: Set FLASK_ENV
-          command: echo "FLASK_ENV=testing" >> $BASH_ENV
 
 
       - run:
-          name: Run Tests with Coverage
+          name: Start PostgreSQL Service
           command: |
-            source $BASH_ENV  # Source the environment variables
-            coverage run -m unittest discover
-            
+            sudo service postgresql stop
+            sudo service postgresql start
+
 
       - run:
-          name: Debug .coveralls.yml
+          name: Set up database
           command: |
-            cat .coveralls.yml
-            
+            python -c "from models import initialize_database; initialize_database()"
+
 
       - run:
-          name: Upload Coverage to Coveralls
+          name: Run tests
           command: |
-            coveralls
+            python -m unittest discover -s tests/
+
