@@ -5,12 +5,18 @@ jobs:
     docker:
       - image: circleci/python:3.9
 
+    environment:
+      FLASK_ENV : testing
+      DB_URL: $DB_URL
+      DB_USERNAME: $DB_USER
+      DB_PASSWORD: $DB_PASSWORD
+      DB_NAME : $DB_NAME
+
     steps:
       - checkout
       - run:
           name: Print current directory
-          command: |
-            pwd
+          command: pwd
       - run:
           name: List files in the directory
           command: ls -la
@@ -21,18 +27,26 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y python3-dev libpq-dev  # Install PostgreSQL dependencies
             pip install -r requirements.txt
-      - run:
-          name: Check PostgreSQL service status
-          command: |
-            sudo service postgresql status
-            
       
 
       - run:
           name: Set up database
-          command: python run.py
+          command: |
+            # Run database migrations or setup script here
+            python run.py db upgrade
+            # Alternatively, you can execute database initialization commands directly
+
+      - run:
+          name: Run Flask application
+          command: |
+            # Start the Flask application
+            python run.py &
 
       - run:
           name: Run tests
           command: |
+            # Wait for Flask application to start
+            sleep 5  # Adjust the time according to your application's startup time
+            # Run tests against the running Flask application
             python -m unittest discover -s tests/
+
