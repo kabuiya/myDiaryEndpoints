@@ -12,7 +12,11 @@ Note: These tests require a properly configured environment with access to the d
 
 import os
 import unittest
+import sys
+import os
 
+# Add the parent directory of run.py to the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from dotenv import load_dotenv
 
 from run import create_app
