@@ -13,12 +13,15 @@ Note: These tests require a properly configured environment with access to the d
 import os
 import unittest
 
+from dotenv import load_dotenv
+
 from run import create_app
 
 
 class TestApp(unittest.TestCase):
 
     def setUp(self):
+        load_dotenv()
         self.app = create_app()
         self.app_context = self.app.app_context()
         self.app_context.push()
