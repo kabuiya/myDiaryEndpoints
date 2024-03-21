@@ -25,7 +25,7 @@ jobs:
       - run:
           name: Set up database
           command: |
-            python -c "from models import initialize_database; initialize_database('$DB_USER', '$DB_PASSWORD', '$DB_NAME', '$FLASK_ENV')"
+            python -c "from models import initialize_database; initialize_database()"
 
       - run:
           name: Run tests
