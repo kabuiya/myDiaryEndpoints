@@ -12,7 +12,7 @@ jobs:
     # Service container image
       - image: cimg/postgres:14.0
         environment:
-          POSTGRES_USER: postgres
+          POSTGRES_USER: monicah
           POSTGRES_DB: testdb
 
     steps:
