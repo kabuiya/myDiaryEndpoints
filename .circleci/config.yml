@@ -11,6 +11,8 @@ jobs:
       DB_USERNAME: $DB_USER
       DB_PASSWORD: $DB_PASSWORD
       DB_NAME : $DB_NAME
+      DB_HOST : localhost
+      pDB_PORT : 5432
 
     steps:
       - checkout
