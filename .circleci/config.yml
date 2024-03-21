@@ -1,21 +1,26 @@
+# .circleci/config.yml
+
 version: 2.1
 
 jobs:
-  build:
+  run-tests:
     docker:
-      - image: circleci/python:3.9
-    services:
-      - postgresql
-    environment:
-      POSTGRES_USER: monicah
-      POSTGRES_DB: testdb
-      POSTGRES_PASSWORD: phuier@200
+      - image: circleci/python:3.8
+
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: pip install -r requirements.txt
-      - run:
-          name: Run tests
-          command: pytest
 
+      # Install PostgreSQL client
+      - run:
+          name: Install PostgreSQL client
+          command: sudo apt-get update && sudo apt-get install postgresql-client
+
+      # Install psycopg2
+      - run:
+          name: Install psycopg2
+          command: pip install psycopg2
+
+      # Run your Python tests
+      - run:
+          name: Run Python tests
+          command: python test_my_app.py
