@@ -7,20 +7,20 @@ jobs:
 
     steps:
       - checkout
-
-
       - run:
-          name: Install dependencies
-          command: |
-            sudo apt-get install python3-dev libpq-dev  # Install PostgreSQL dependencies
-            pip install -r requirements.txt
-
-
-      - run:
-          name: Start PostgreSQL Service
-          command: |
-            sudo service postgresql stop
-            sudo service postgresql start
+            name: Install dependencies
+            command: |
+              sudo apt-get update
+              sudo apt-get install -y python3-dev libpq-dev  # Install PostgreSQL dependencies
+              pip install -r requirements.txt
+              
+              # Load environment variables from .env file
+              - run:
+                  name: Load environment variables
+                  command: |
+                    set -a
+                    source .env
+                    set +a
 
 
       - run:
