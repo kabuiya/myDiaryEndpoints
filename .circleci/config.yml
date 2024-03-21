@@ -20,3 +20,5 @@ jobs:
       - run: sudo apt-get install postgresql-client python3-pip  # Install PostgreSQL client and Python3 pip
       - run: pip3 install psycopg2-binary Flask  # Install psycopg2 for Python PostgreSQL interaction
       - run: python3 models.py  # Run your database initialization script
+        # Run unittest
+      - run: python3 -m unittest discover -v
