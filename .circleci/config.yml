@@ -25,7 +25,11 @@ jobs:
       - run:
           name: Set up database
           command: |
-            python -c "from models import initialize_database; initialize_database()"
+            python -c "from models import initialize_database; \
+            from run import create_app; \
+            app = create_app(); \
+            with app.app_context(): \
+                initialize_database()"
 
       - run:
           name: Run tests
