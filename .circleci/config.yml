@@ -1,3 +1,4 @@
+
 version: 2.1
 
 jobs:
@@ -7,27 +8,25 @@ jobs:
 
     steps:
       - checkout
-      - run:
-            name: Install dependencies
-            command: |
-              sudo apt-get update
-              sudo apt-get install -y python3-dev libpq-dev  # Install PostgreSQL dependencies
-              pip install -r requirements.txt
-              
-              # Load environment variables from .env file
-              - run:
-                  name: Load environment variables
-                  command: |
-                    set -a
-                    source .env
-                    set +a
 
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y python3-dev libpq-dev  # Install PostgreSQL dependencies
+            pip install -r requirements.txt
+
+      - run:
+          name: Load environment variables
+          command: |
+            set -a
+            source .env
+            set +a
 
       - run:
           name: Set up database
           command: |
             python -c "from models import initialize_database; initialize_database()"
-
 
       - run:
           name: Run tests
