@@ -13,6 +13,7 @@ jobs:
       - image: cimg/postgres:14.0
         environment:
           POSTGRES_USER: postgres
+          POSTGRES_DB: testdb
 
     steps:
       - checkout
@@ -21,4 +22,4 @@ jobs:
       - run: pip3 install -r requirements.txt # Install psycopg2 for Python PostgreSQL interaction
       - run: python3 models.py  # Run your database initialization script
         # Run unittest
-      - run: python3 -m unittest discover -v
+      - run: python3 -m unittest discover
