@@ -19,6 +19,7 @@ jobs:
       - checkout
       - run: sudo apt-get update
       - run: sudo apt-get install postgresql-client python3-pip  # Install PostgreSQL client and Python3 pip
+      - run: whoami
       - run: |
           sudo -u postgres psql -c "CREATE ROLE circleci WITH LOGIN PASSWORD 11111;"
           sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE testdb TO circleci;"
