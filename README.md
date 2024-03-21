@@ -1,0 +1,3 @@
+
+[![CircleCI](https://dl.circleci.com/status-badge/img/circleci/3WDH8NqBWqqcfhediMABwD/TLa434HwiKGNf8dtzv7dj6/tree/main.svg?style=svg&circle-token=CCIPRJ_TwmPdTBDTW6eBxuRUuR1wo_5f287b32a3e4e78813c8f9d1c0d0783fcce2c63b)](https://dl.circleci.com/status-badge/redirect/circleci/3WDH8NqBWqqcfhediMABwD/TLa434HwiKGNf8dtzv7dj6/tree/main)
+[![Coverage Status](https://coveralls.io/repos/github/kabuiya/myDiaryEndpoints/badge.svg?branch=main)](https://coveralls.io/github/kabuiya/myDiaryEndpoints?branch=main)
