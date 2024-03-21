@@ -8,7 +8,10 @@ jobs:
 
     steps:
       - checkout
-
+      - run:
+          name: Print current directory
+          command: |
+            pwd
       - run:
           name: Install dependencies
           command: |
