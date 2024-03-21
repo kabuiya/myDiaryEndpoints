@@ -13,6 +13,13 @@ jobs:
           command: |
             pwd
       - run:
+          name: List files in the directory
+          command: ls -la
+      - run:
+          name: Update file permissions
+          command: chmod +r .env
+
+      - run:
           name: Install dependencies
           command: |
             sudo apt-get update
