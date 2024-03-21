@@ -6,9 +6,17 @@ jobs:
   build:
     docker:
       - image: circleci/python:3.8
+    environment:
+      # Set environment variables for database connection
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${DB_NAME}
+      DATABASE_USER: ${DB_USER}
+      DATABASE_PASSWORD: ${DB_PASSWORD}
 
     steps:
       - checkout
+
 
       # Install PostgreSQL client
       - run:
