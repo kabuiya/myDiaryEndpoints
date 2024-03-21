@@ -32,15 +32,15 @@ jobs:
       - run:
           name: Set up database
           command: |
-            # Run database migrations or setup script here
-            python run.py db upgrade
-            # Alternatively, you can execute database initialization commands directly
+            
+            python run.py 
+            
 
       - run:
           name: Run Flask application
           command: |
             # Start the Flask application
-            python run.py &
+            python run.py 
 
       - run:
           name: Run tests
