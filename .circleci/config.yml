@@ -11,6 +11,7 @@ jobs:
           DB_PASSWORD: ""
           DB_HOST: localhost
           DB_PORT: 5432
+          SECRET_KEY: 1
           # Set any other necessary environment variables here, such as register_name and owner
       - image: cimg/postgres:14.0
         environment:
@@ -22,6 +23,10 @@ jobs:
       - run: sudo apt-get update
       - run: sudo apt-get install postgresql-client
       - run: pip install -r requirements.txt  # Install your project's dependencies
+      - run:
+          name: Create circleci user
+          command: |
+            psql -U postgres -c "CREATE ROLE circleci WITH LOGIN PASSWORD '';"
       - run:
           name: Initialize database
           command: |
