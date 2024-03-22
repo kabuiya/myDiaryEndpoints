@@ -9,7 +9,7 @@ jobs:
     environment:
       # Set environment variables for database connection
       DATABASE_HOST: localhost
-      DATABASE_PORT: 5433
+      DATABASE_PORT: 5432
       DATABASE_NAME: testdb
       DATABASE_USER: postgres
       DATABASE_PASSWORD: phuier@200
@@ -17,8 +17,10 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Start PostgreSQL service
-          command: sudo service postgresql start
+          name: Start PostgreSQL
+          command: |
+            pg_ctl -D /var/lib/postgresql/data -l logfile start
+
 
       # Install PostgreSQL client
       - run:
