@@ -6,12 +6,16 @@ import os
 def get_db_connection():
     if current_app.config['FLASK_ENV'] == 'testing':
         return psycopg2.connect(
-            dbname=current_app.config.get('DB_NAME', 'testdb'),
-            user=current_app.config.get('DB_USER', 'postgres'),
-            password=current_app.config.get('DB_PASSWORD', 'phuier@200'),
-            host=current_app.config.get('DB_HOST', 'localhost'),
-            port=current_app.config.get('DB_PORT', 5432)
-
+            # dbname=current_app.config.get('DB_NAME', 'testdb'),
+            # user=current_app.config.get('DB_USER', 'postgres'),
+            # password=current_app.config.get('DB_PASSWORD', 'phuier@200'),
+            # host=current_app.config.get('DB_HOST', 'localhost'),
+            # port=current_app.config.get('DB_PORT', 5432)
+            host="127.0.0.1",
+            port="5432",
+            dbname="testdb",
+            user="postgres",
+            password="phuier@200"
 
         )
     elif current_app.config['FLASK_ENV'] == 'production':
