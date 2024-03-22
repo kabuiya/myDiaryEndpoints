@@ -16,9 +16,10 @@ import sys
 import os
 
 # Add the parent directory of run.py to the Python path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from dotenv import load_dotenv
 
+from models import get_db_connection
 from run import create_app
 
 
@@ -50,8 +51,7 @@ class TestApp(unittest.TestCase):
 
     #
     def test_already_existingEmail(self):
-        register_data = {'username': 'sam', 'email_address': os.getenv('email'), 'password': 'password'}
-        self.response = self.client.post('/api/v1/register', json=register_data)
+        self.response = self.client.post('/api/v1/register', json=self.data)
         self.assertEqual(self.response.status_code, 400)
         self.assertIn(b'email already exists', self.response.data)
 
@@ -63,9 +63,7 @@ class TestApp(unittest.TestCase):
         self.assertIn(b'username already exists', self.response.data)
 
     def test_already_existingUsernameEmail(self):
-        register_data = {'username': os.getenv('name'), 'email_address': os.getenv('email'),
-                         'password': 'password'}
-        self.response = self.client.post('/api/v1/register', json=register_data)
+        self.response = self.client.post('/api/v1/register', json=self.data)
         self.assertEqual(self.response.status_code, 400)
         self.assertIn(b'username and email already exist', self.response.data)
 

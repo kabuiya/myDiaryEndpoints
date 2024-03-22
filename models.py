@@ -54,6 +54,7 @@ def initialize_database():
     if current_app.config['FLASK_ENV'] == 'testing':
         conn = get_db_connection()
         cur = conn.cursor()
+
         cur.execute(
             '''
                  DELETE FROM  USERS WHERE USERNAME = %s;
@@ -68,4 +69,5 @@ def initialize_database():
         )
     cur.close()  # Close curso  # Close connection
     return conn
+
 
