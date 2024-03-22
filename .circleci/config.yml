@@ -24,6 +24,17 @@ jobs:
       - run: sudo apt-get install postgresql-client
       - run: pip install -r requirements.txt  # Install your project's dependencies
       - run:
+          name: Install dockerize
+          command: |
+           sudo apt-get update
+           sudo apt-get install -y wget
+           wget https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-linux-amd64-v0.6.1.tar.gz
+           sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-v0.6.1.tar.gz
+           rm dockerize-linux-amd64-v0.6.1.tar.gz
+      - run:
+         name: Wait for PostgreSQL
+         command: dockerize -wait tcp://localhost:5432 -timeout 1m
+      - run:
           name: Create circleci user
           command: |
             psql -U postgres -c "CREATE ROLE circleci WITH LOGIN PASSWORD '';"
