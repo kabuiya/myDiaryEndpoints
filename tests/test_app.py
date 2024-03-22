@@ -59,6 +59,7 @@ class TestApp(unittest.TestCase):
 
     # register with already existing email
     def test_already_existingEmail(self):
+        self.response = self.client.post('/api/v1/register', json=self.data)
         data = {'username': 'username', 'email_address': 'anitah@gmail.com',
                 'password': 'kabuiya123'}
         self.response = self.client.post('/api/v1/register', json=data)
@@ -67,6 +68,7 @@ class TestApp(unittest.TestCase):
 
     # register with already existing username
     def test_already_existingUsername(self):
+        self.response = self.client.post('/api/v1/register', json=self.data)
         data = {'username': 'maryanita', 'email_address': 'existing username@gmail.com',
                 'password': 'kabuiya123'}
         self.response = self.client.post('/api/v1/register', json=data)
@@ -88,13 +90,15 @@ class TestApp(unittest.TestCase):
 
     # login/ non ixisting username
     def test_invalid_login_Username(self):
-        login_data = {'username': 'user_name', 'password': 'invalidloginusername'}
+        self.response = self.client.post('/api/v1/register', json=self.data)
+        login_data = {'username': 'user_name', 'password': 'kabuiya123'}
         self.response = self.client.post('/api/v1/login', json=login_data)
         self.assertEqual(self.response.status_code, 400)
         self.assertIn(b'invalid username! User not found', self.response.data)
 
     # login with wrong password
     def test_invalid_password(self):
+        self.response = self.client.post('/api/v1/register', json=self.data)
         login_data = {'username': 'maryanita', 'password': 'invalid_password'}
         self.response = self.client.post('/api/v1/login', json=login_data)
         self.assertEqual(self.response.status_code, 400)
@@ -116,6 +120,7 @@ class TestApp(unittest.TestCase):
 
     # successful login
     def test_login_success(self):
+        self.response = self.client.post('/api/v1/register', json=self.data)
         response = self.client.post('/api/v1/login',
                                     json={'username': 'maryanita', 'password': 'kabuiya123'})
         self.assertEqual(response.status_code, 200)
@@ -126,9 +131,10 @@ class TestApp(unittest.TestCase):
 
     # wit authorization token
     def test_get_profile(self):
-        self.data = {'username': 'maryanita', 'password': 'kabuiya123'}
+        self.response = self.client.post('/api/v1/register', json=self.data)
+        self.login_data = {'username': 'maryanita', 'password': 'kabuiya123'}
         response = self.client.post('/api/v1/login',
-                                    json=self.data)
+                                    json=self.login_data)
         data = response.get_json()
         valid_tkn = 'Bearer ' + str(data['token'])
         self.response = self.client.get('/api/v1/profile', headers={'Authorization': valid_tkn})
@@ -154,7 +160,9 @@ class TestApp(unittest.TestCase):
 
     # blacklisted token
     def test_blacklisted_token(self):
-        # first login
+        # register
+        self.response = self.client.post('/api/v1/register', json=self.data)
+        # then login
         self.response = self.client.post('/api/v1/login', json=self.data)
         data = self.response.get_json()
         print(data, 'response from login')
@@ -171,6 +179,7 @@ class TestApp(unittest.TestCase):
     # exsting username
     # add other tests
     def test_profile_update(self):
+        self.response = self.client.post('/api/v1/register', json=self.data)
         # logged in
         self.response = self.client.post('/api/v1/login',
                                          json=self.data)
@@ -218,6 +227,7 @@ class TestApp(unittest.TestCase):
 
     # test user add entries
     def test_post_entries(self):
+        self.response = self.client.post('/api/v1/register', json=self.data)
         post_dt = {'content': 'two months of coding'}
         self.response = self.client.post('/api/v1/login',
                                          json={'username': 'maryanita', 'password': 'kabuiya123'})
@@ -230,6 +240,7 @@ class TestApp(unittest.TestCase):
 
     # TEST GET ENTRIES
     def test_get_entries(self):
+        self.response = self.client.post('/api/v1/register', json=self.data)
         self.response = self.client.post('/api/v1/login',
                                          json={'username': 'maryanita', 'password': 'kabuiya123'})
         data = self.response.get_json()
