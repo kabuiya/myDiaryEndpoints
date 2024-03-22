@@ -35,8 +35,8 @@ class TestApp(unittest.TestCase):
                      'password': os.getenv('test_password')}
         self.data1 = {'username': os.getenv('t_name'), 'email_address': os.getenv('t_email'),
                       'password': os.getenv('test_password')}
-        self.data2 = {'username': os.getenv('name'), 'email_address': os.getenv('email'),
-                      'password': os.getenv('test_password')}
+        self.data2 = {'username': 'maryanita', 'email_address': 'anitah@gmail.com',
+                      'password': 'kabuiya123'}
 
     def tearDown(self):
         self.app_context.pop()
