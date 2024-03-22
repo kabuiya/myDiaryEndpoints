@@ -15,7 +15,7 @@ def get_db_connection():
             port="5432",
             dbname="testdb",
             user="postgres",
-            password="phuier@200"
+            password="11111"
 
         )
     elif current_app.config['FLASK_ENV'] == 'production':
