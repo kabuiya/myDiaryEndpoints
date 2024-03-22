@@ -37,7 +37,7 @@ jobs:
       - run:
           name: Create circleci user
           command: |
-            psql -U postgres -c "CREATE ROLE circleci WITH LOGIN PASSWORD '';"
+            psql -U postgres -h localhost -c "CREATE ROLE circleci WITH LOGIN PASSWORD '';"
       - run:
           name: Initialize database
           command: |
