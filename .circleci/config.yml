@@ -8,7 +8,7 @@ jobs:
       - image: circleci/python:3.8
     environment:
       # Set environment variables for database connection
-      DATABASE_HOST: "127.0.0.1"
+      DATABASE_HOST: localhost
       DATABASE_PORT: 5433
       DATABASE_NAME: testdb
       DATABASE_USER: postgres
@@ -16,11 +16,13 @@ jobs:
 
     steps:
       - checkout
-
+      - run:
+          name: Start PostgresSQL service
+          command: sudo service postgresql start
 
       # Install PostgreSQL client
       - run:
-          name: Install PostgreSQL client
+          name: Install PostgresSQL client
           command: sudo apt-get update && sudo apt-get install postgresql-client
 
       # Install psycopg2
