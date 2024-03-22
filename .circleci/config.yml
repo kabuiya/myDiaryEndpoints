@@ -17,16 +17,15 @@ jobs:
     steps:
       - checkout
 
-      - run:
-          name: Start PostgreSQL
-          command: |
-            pg_ctl -D /var/lib/postgresql/data start
 
       # Install PostgreSQL client
       - run:
-          name: Install PostgreSQL client
-          command: sudo apt-get update && sudo apt-get install postgresql-client
-
+          name: Install PostgreSQL server
+          command: sudo apt-get update && sudo apt-get install postgresql
+            # Start PostgreSQL service
+      - run:
+          name: Start PostgreSQL
+          command: sudo service postgresql start
       # Install psycopg2
       - run:
           name: Install psycopg2
