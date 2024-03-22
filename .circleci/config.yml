@@ -1,54 +1,37 @@
 version: 2.1
 
+orbs:
+  python: circleci/python@1.3.0
+  postgres: circleci/postgresql@1.1.0
+
 jobs:
   build:
     docker:
-      - image: circleci/python:3.9
-
-    environment:
-      FLASK_ENV : testing
-      DB_URL: $DB_URL
-      DB_USERNAME: $DB_USER
-      DB_PASSWORD: $DB_PASSWORD
-      DB_NAME : $DB_NAME
-      DB_HOST : localhost
-      pDB_PORT : 5432
-
+      - image: cimg/python:3.9  # Use the appropriate Python version
     steps:
       - checkout
-      - run:
-          name: Print current directory
-          command: pwd
-      - run:
-          name: List files in the directory
-          command: ls -la
-
-      - run:
-          name: Install dependencies
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y python3-dev libpq-dev  # Install PostgreSQL dependencies
-            pip install -r requirements.txt
-      
-
-      - run:
-          name: Set up database
-          command: |
-            
-            python run.py 
-            
-
-      - run:
-          name: Run Flask application
-          command: |
-            # Start the Flask application
-            python run.py 
-
+      - setup_remote_docker  # Add this if your tests require Docker
+      - python/install-packages:
+          pkg-manager: pip
+      - postgres/install
+      - postgres/init_db:  # Initialize the database
+          db_name: testdb
+          db_user: circleci
       - run:
           name: Run tests
           command: |
-            # Wait for Flask application to start
-            sleep 5  # Adjust the time according to your application's startup time
-            # Run tests against the running Flask application
-            python -m unittest discover -s tests/
+            export FLASK_ENV=testing
+            export DB_NAME=testdb
+            export DB_USER=circleci
+            export DB_PASSWORD=""
+            export DB_HOST=localhost
+            export DB_PORT=5432
+            # Add any other necessary environment variables here
+            # Run your test command
+            python -m unittest discover tests
 
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
