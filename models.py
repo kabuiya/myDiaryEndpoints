@@ -5,7 +5,7 @@ import os
 
 def get_db_connection():
     if current_app.config['FLASK_ENV'] == 'testing':
-        return psycopg2.connect(
+        con = psycopg2.connect(
             # dbname=current_app.config.get('DB_NAME', 'testdb'),
             # user=current_app.config.get('DB_USER', 'postgres'),
             # password=current_app.config.get('DB_PASSWORD', 'phuier@200'),
@@ -18,14 +18,16 @@ def get_db_connection():
             password="phuier@200"
 
         )
+        return con
     elif current_app.config['FLASK_ENV'] == 'production':
-        return psycopg2.connect(
+        con = psycopg2.connect(
             dbname=current_app.config.get('DB_NAME'),
             user=current_app.config.get('DB_USER'),
             password=current_app.config.get('DB_PASSWORD'),
             host=current_app.config.get('DB_HOST', 'localhost'),
             port=current_app.config.get('DB_PORT', 5432)
         )
+        return con
     else:
         raise ValueError("Unknown FLASK_ENV")
 
