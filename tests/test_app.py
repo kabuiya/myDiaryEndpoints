@@ -43,9 +43,14 @@ class TestApp(unittest.TestCase):
 
     # REGISTER
     def test_success_registration(self):
-        self.response = self.client.post('/api/v1/register', json=self.data)
+        self.response = self.client.post('/api/v1/register', json=self.data2)
         self.assertEqual(self.response.status_code, 200)
         self.assertIn(b'Registration successful', self.response.data)
+
+    def test_success_reg(self):
+        self.response = self.client.post('/api/v1/register', json=self.data1)
+        self.assertEqual(self.response.status_code, 200)
+        self.assertIn(b'Registration successful', self.response)
 
     def test_email_validity(self):
         register_data = {'username': 'mony', 'email_address': 'invalidemail', 'password': 'password'}
