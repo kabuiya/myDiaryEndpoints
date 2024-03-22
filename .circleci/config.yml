@@ -25,7 +25,7 @@ jobs:
       - run:
           name: Initialize database
           command: |
-            python -c "from your_module import initialize_database; initialize_database()"
+            python -c "from models import initialize_database; initialize_database()"
       - run:
           name: Run tests
           command: |
