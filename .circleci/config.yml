@@ -8,6 +8,7 @@ jobs:
       - image: cimg/python:3.8
     environment:
       # Set environment variables for database connection
+      DATABASE_URL: postgresql://circleci:phuier@200@localhost:5432/testdb
       DATABASE_HOST: localhost
       DATABASE_PORT: 5432
       DATABASE_NAME: testdb
