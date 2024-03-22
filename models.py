@@ -8,7 +8,7 @@ def get_db_connection():
         return psycopg2.connect(
             dbname=current_app.config.get('DB_NAME'),
             user=current_app.config.get('DB_USER'),
-            password=current_app.config.get('DB_PASSWORD'),
+            password=current_app.config.get('DB_PASSWORD', 'phuier@200'),
             host=current_app.config.get('DB_HOST', 'localhost'),
             port=current_app.config.get('DB_PORT', 5432)
 
