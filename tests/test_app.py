@@ -45,11 +45,6 @@ class TestApp(unittest.TestCase):
         self.assertEqual(self.response.status_code, 200)
         self.assertIn(b'Registration successful', self.response.data)
 
-    def test_success_reg(self):
-        self.response = self.client.post('/api/v1/register', json=self.data2)
-        self.assertEqual(self.response.status_code, 200)
-        self.assertIn(b'Registration successful', self.response.data)
-
     # invalid email
     def test_email_validity(self):
         register_data = {'username': 'mony', 'email_address': 'invalidemail', 'password': 'password'}
@@ -191,6 +186,8 @@ class TestApp(unittest.TestCase):
 
     # already exsting username(maryanita)
     def test_profile_update_with_existing_Username(self):
+        self.response = self.client.post('/api/v1/register', json=self.data)
+        self.response = self.client.post('/api/v1/register', json=self.data2)
         # already existing username
         update_with = {'username': 'maryanita', 'email_address': 'existingusername@gmail.com'}
         # logged in
@@ -204,7 +201,9 @@ class TestApp(unittest.TestCase):
 
     # already exsting email(anitah@gmail.com)
     def test_profile_update_with_existing_email(self):
+        self.response = self.client.post('/api/v1/register', json=self.data)
         update_with = {'username': 'monyanita', 'email_address': 'anitah@gmail.com'}
+        self.response = self.client.post('/api/v1/register', json=self.data2)
         # logged in
         self.response = self.client.post('/api/v1/login',
                                          json={'username': 'monyanita', 'password': 'kabuiya123'})
@@ -217,6 +216,7 @@ class TestApp(unittest.TestCase):
 
     # logout tests
     def test_logout(self):
+        self.response = self.client.post('/api/v1/register', json=self.data)
         self.response = self.client.post('/api/v1/login',
                                          json={'username': 'maryanita', 'password': 'kabuiya123'})
         data = self.response.get_json()
