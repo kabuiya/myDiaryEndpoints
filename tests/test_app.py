@@ -157,7 +157,9 @@ class TestApp(unittest.TestCase):
         # first login
         self.response = self.client.post('/api/v1/login', json=self.data)
         data = self.response.get_json()
+        print(data, 'response from login')
         tkn = 'Bearer ' + str(data['token'])
+        print(tkn, 'token')
         # logout
         self.response = self.client.post('/api/v1/logout', headers={'Authorization': tkn})
         # after logogut token be blacklisted
