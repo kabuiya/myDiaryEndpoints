@@ -11,7 +11,7 @@ jobs:
       DATABASE_HOST: localhost
       DATABASE_PORT: 5432
       DATABASE_NAME: testdb
-      DATABASE_USER: postgres
+      DATABASE_USER: circleci
       DATABASE_PASSWORD: phuier@200
 
     steps:
