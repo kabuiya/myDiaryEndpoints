@@ -14,8 +14,8 @@ def get_db_connection():
             host="127.0.0.1",
             port="5432",
             dbname="testdb",
-            user="circleci",
-            password="phuier@200"
+            user="postgres",
+
 
         )
         return con
