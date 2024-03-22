@@ -31,11 +31,9 @@ class TestApp(unittest.TestCase):
         self.app_context = self.app.app_context()
         self.app_context.push()
         self.client = self.app.test_client()
-        self.data = {'username': 'mary', 'email_address': 'mary@gmail.com',
+        self.data = {'username': 'maryanita', 'email_address': 'anitah@gmail.com',
                      'password': 'kabuiya123'}
-        self.data1 = {'username': 'monyanita', 'email_address': 'monyanita@gmail.com',
-                      'password': 'kabuiya123'}
-        self.data2 = {'username': 'maryanita', 'email_address': 'anitah@gmail.com',
+        self.data2 = {'username': 'monyanita', 'email_address': 'monyanitah@gmail.com',
                       'password': 'kabuiya123'}
 
     def tearDown(self):
@@ -44,6 +42,11 @@ class TestApp(unittest.TestCase):
     # REGISTER
     def test_success_registration(self):
         self.response = self.client.post('/api/v1/register', json=self.data)
+        self.assertEqual(self.response.status_code, 200)
+        self.assertIn(b'Registration successful', self.response.data)
+
+    def test_success_reg(self):
+        self.response = self.client.post('/api/v1/register', json=self.data2)
         self.assertEqual(self.response.status_code, 200)
         self.assertIn(b'Registration successful', self.response.data)
 
@@ -66,13 +69,13 @@ class TestApp(unittest.TestCase):
     def test_already_existingUsername(self):
         data = {'username': 'maryanita', 'email_address': 'existing username@gmail.com',
                 'password': 'kabuiya123'}
-        self.response = self.client.post('/api/v1/register', json=self.data2)
+        self.response = self.client.post('/api/v1/register', json=data)
         self.assertEqual(self.response.status_code, 400)
         self.assertIn(b'username already exists', self.response.data)
 
     # regiter with existing username and email
     def test_already_existingUsernameEmail(self):
-        self.response = self.client.post('/api/v1/register', json=self.data2)
+        self.response = self.client.post('/api/v1/register', json=self.data)
         self.assertEqual(self.response.status_code, 400)
         self.assertIn(b'username and email already exist', self.response.data)
 
@@ -85,14 +88,14 @@ class TestApp(unittest.TestCase):
 
     # login/ non ixisting username
     def test_invalid_login_Username(self):
-        login_data = {'username': 'user_name', 'password': os.getenv('test_password')}
+        login_data = {'username': 'user_name', 'password': 'invalidloginusername'}
         self.response = self.client.post('/api/v1/login', json=login_data)
         self.assertEqual(self.response.status_code, 400)
         self.assertIn(b'invalid username! User not found', self.response.data)
 
     # login with wrong password
     def test_invalid_password(self):
-        login_data = {'username': 'monyanita', 'password': 'invalid_password'}
+        login_data = {'username': 'maryanita', 'password': 'invalid_password'}
         self.response = self.client.post('/api/v1/login', json=login_data)
         self.assertEqual(self.response.status_code, 400)
         self.assertIn(b'wrong password', self.response.data)
@@ -106,7 +109,7 @@ class TestApp(unittest.TestCase):
 
     # login with missing credential
     def test_missing_login_credential(self):
-        login_data = {'username': 'monyanita'}  # missing pswd
+        login_data = {'username': 'maryanita'}  # missing pswd
         self.response = self.client.post('/api/v1/login', json=login_data)
         self.assertEqual(self.response.status_code, 400)
         self.assertIn(b'username and password are required', self.response.data)
@@ -123,8 +126,9 @@ class TestApp(unittest.TestCase):
 
     # wit authorization token
     def test_get_profile(self):
+        self.data = {'username': 'maryanita', 'password': 'kabuiya123'}
         response = self.client.post('/api/v1/login',
-                                    json=self.data1)
+                                    json=self.data)
         data = response.get_json()
         valid_tkn = 'Bearer ' + str(data['token'])
         self.response = self.client.get('/api/v1/profile', headers={'Authorization': valid_tkn})
@@ -143,7 +147,7 @@ class TestApp(unittest.TestCase):
 
     # expired   token
     def test_expired_token(self):
-        expired_tkn = 'Beare ufhekdjsliuhfdkj'
+        expired_tkn = 'Bearer ufhekdjsliuhfdkj'
         self.response = self.client.get('/api/v1/profile', headers={'Authorization': expired_tkn})
         self.assertEqual(self.response.json, {'message': 'Token has expired'})
         self.assertEqual(self.response.status_code, 401)
@@ -151,14 +155,14 @@ class TestApp(unittest.TestCase):
     # blacklisted token
     def test_blacklisted_token(self):
         # first login
-        self.response = self.client.post('/api/v1/login', json=self.data2)
+        self.response = self.client.post('/api/v1/login', json=self.data)
         data = self.response.get_json()
-        blacklisted_tk = 'Bearer ' + str(data['token'])
+        tkn = 'Bearer ' + str(data['token'])
         # logout
-        self.response = self.client.post('/api/v1/logout', headers={'Authorization': blacklisted_tk})
+        self.response = self.client.post('/api/v1/logout', headers={'Authorization': tkn})
         # after logogut token be blacklisted
         # get profile with blacklisetd tkn
-        self.response = self.client.get('/api/v1/profile', headers={'Authorization': blacklisted_tk})
+        self.response = self.client.get('/api/v1/profile', headers={'Authorization': tkn})
         self.assertEqual(self.response.json, {'message': 'Token has already expired, please log in again'})
 
     # test profile update
@@ -167,17 +171,17 @@ class TestApp(unittest.TestCase):
     def test_profile_update(self):
         # logged in
         self.response = self.client.post('/api/v1/login',
-                                         json=self.data1)
+                                         json=self.data)
         data = self.response.get_json()
         tk = 'Bearer ' + str(data['token'])
         # access profile
-        response = self.client.put('/api/v1/profile/update', headers={'Authorization': tk}, json=self.data1)
+        response = self.client.put('/api/v1/profile/update', headers={'Authorization': tk}, json=self.data)
         self.assertEqual(response.get_json(), {'message': 'details successfully updated'})
 
-    # already exsting username
+    # already exsting username(maryanita)
     def test_profile_update_with_existing_Username(self):
         # already existing username
-        update_with = {'username': 'maryanita', 'email_address': self.data['email_address']}
+        update_with = {'username': 'maryanita', 'email_address': 'existingusername@gmail.com'}
         # logged in
         self.response = self.client.post('/api/v1/login', json={'username': 'monyanita', 'password': 'kabuiya123'})
         data = self.response.get_json()
@@ -203,7 +207,7 @@ class TestApp(unittest.TestCase):
     # logout tests
     def test_logout(self):
         self.response = self.client.post('/api/v1/login',
-                                         json={'username': 'monyanita', 'password': 'kabuiya123'})
+                                         json={'username': 'maryanita', 'password': 'kabuiya123'})
         data = self.response.get_json()
         tk = 'Bearer ' + str(data['token'])
         self.response = self.client.post('/api/v1/logout', headers={'Authorization': tk})
@@ -214,7 +218,7 @@ class TestApp(unittest.TestCase):
     def test_post_entries(self):
         post_dt = {'content': 'two months of coding'}
         self.response = self.client.post('/api/v1/login',
-                                         json={'username': 'monyanita', 'password': 'kabuiya123'})
+                                         json={'username': 'maryanita', 'password': 'kabuiya123'})
         data = self.response.get_json()
         tk = 'Bearer ' + str(data['token'])
         response = self.client.post('/api/v1/add_entries', headers={'Authorization': tk}, json=post_dt)
@@ -225,7 +229,7 @@ class TestApp(unittest.TestCase):
     # TEST GET ENTRIES
     def test_get_entries(self):
         self.response = self.client.post('/api/v1/login',
-                                         json={'username': 'monyanita', 'password': 'kabuiya123'})
+                                         json={'username': 'maryanita', 'password': 'kabuiya123'})
         data = self.response.get_json()
         tk = 'Bearer ' + str(data['token'])
         response = self.client.get('/api/v1/get_entries', headers={'Authorization': tk})
