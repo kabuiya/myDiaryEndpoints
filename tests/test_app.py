@@ -33,13 +33,17 @@ class TestApp(unittest.TestCase):
         self.client = self.app.test_client()
         self.data = {'username': os.getenv('register_name'), 'email_address': os.getenv('reg_email'),
                      'password': os.getenv('test_password')}
+        self.data1 = {'username': os.getenv('t_name'), 'email_address': os.getenv('t_email'),
+                      'password': os.getenv('test_password')}
+        self.data2 = {'username': os.getenv('name'), 'email_address': os.getenv('email'),
+                      'password': os.getenv('test_password')}
 
     def tearDown(self):
         self.app_context.pop()
 
     # REGISTER
     def test_success_registration(self):
-        self.response = self.client.post('/api/v1/register', json=self.data)
+        self.response = self.client.post('/api/v1/register', json=self.data2)
         self.assertEqual(self.response.status_code, 200)
         self.assertIn(b'Registration successful', self.response.data)
 
@@ -51,7 +55,7 @@ class TestApp(unittest.TestCase):
 
     #
     def test_already_existingEmail(self):
-        self.response = self.client.post('/api/v1/register', json=self.data)
+        self.response = self.client.post('/api/v1/register', self.data2)
         self.assertEqual(self.response.status_code, 400)
         self.assertIn(b'email already exists', self.response.data)
 
@@ -63,7 +67,9 @@ class TestApp(unittest.TestCase):
         self.assertIn(b'username already exists', self.response.data)
 
     def test_already_existingUsernameEmail(self):
-        self.response = self.client.post('/api/v1/register', json=self.data)
+        register_data = {'username': os.getenv('name'), 'email_address': os.getenv('email'),
+                         'password': 'password'}
+        self.response = self.client.post('/api/v1/register', json=register_data)
         self.assertEqual(self.response.status_code, 400)
         self.assertIn(b'username and email already exist', self.response.data)
 
