@@ -31,9 +31,9 @@ class TestApp(unittest.TestCase):
         self.app_context = self.app.app_context()
         self.app_context.push()
         self.client = self.app.test_client()
-        self.data = {'username': os.getenv('register_name'), 'email_address': os.getenv('reg_email'),
-                     'password': os.getenv('test_password')}
-        self.data1 = {'username': os.getenv('t_name'), 'email_address': os.getenv('t_email'),
+        self.data = {'username': 'mary', 'email_address': 'mary@gmail.com',
+                     'password': 'kabuiya123'}
+        self.data1 = {'username': 'monyanita', 'email_address': 'monyanita@gmail.com',
                       'password': os.getenv('test_password')}
         self.data2 = {'username': 'maryanita', 'email_address': 'anitah@gmail.com',
                       'password': 'kabuiya123'}
@@ -60,16 +60,12 @@ class TestApp(unittest.TestCase):
         self.assertIn(b'email already exists', self.response.data)
 
     def test_already_existingUsername(self):
-        register_data = {'username': os.getenv('name'), 'email_address': 'existingusername@gmail.com',
-                         'password': os.getenv('test_password')}
-        self.response = self.client.post('/api/v1/register', json=register_data)
+        self.response = self.client.post('/api/v1/register', json=self.data2)
         self.assertEqual(self.response.status_code, 400)
         self.assertIn(b'username already exists', self.response.data)
 
     def test_already_existingUsernameEmail(self):
-        register_data = {'username': os.getenv('name'), 'email_address': os.getenv('email'),
-                         'password': 'password'}
-        self.response = self.client.post('/api/v1/register', json=register_data)
+        self.response = self.client.post('/api/v1/register', json=self.data2)
         self.assertEqual(self.response.status_code, 400)
         self.assertIn(b'username and email already exist', self.response.data)
 
@@ -117,7 +113,7 @@ class TestApp(unittest.TestCase):
     # wit authorization token
     def test_get_profile(self):
         response = self.client.post('/api/v1/login',
-                                    json={'username': os.getenv('name'), 'password': os.getenv('test_password')})
+                                    json=self.data2)
         data = response.get_json()
         valid_tkn = 'Bearer ' + str(data['token'])
         self.response = self.client.get('/api/v1/profile', headers={'Authorization': valid_tkn})
@@ -136,7 +132,7 @@ class TestApp(unittest.TestCase):
 
     # expired   token
     def test_expired_token(self):
-        expired_tkn = os.getenv('expired_token')
+        expired_tkn = 'Beare ufhekdjsliuhfdkj'
         self.response = self.client.get('/api/v1/profile', headers={'Authorization': expired_tkn})
         self.assertEqual(self.response.json, {'message': 'Token has expired'})
         self.assertEqual(self.response.status_code, 401)
@@ -144,8 +140,7 @@ class TestApp(unittest.TestCase):
     # blacklisted token
     def test_blacklisted_token(self):
         # first login
-        self.response = self.client.post('/api/v1/login',
-                                         json={'username': 'username', 'password': os.getenv('test_password')})
+        self.response = self.client.post('/api/v1/login', json=self.data2)
         data = self.response.get_json()
         blacklisted_tk = 'Bearer ' + str(data['token'])
         # logout
@@ -159,37 +154,34 @@ class TestApp(unittest.TestCase):
     # exsting username
     # add other tests
     def test_profile_update(self):
-        update_with = {'username': os.getenv('t_name'), 'email_address': os.getenv('t_email')}
         # logged in
         self.response = self.client.post('/api/v1/login',
-                                         json={'username': os.getenv('t_name'), 'password': os.getenv('test_password')})
+                                         json=self.data1)
         data = self.response.get_json()
         tk = 'Bearer ' + str(data['token'])
         # access profile
-        response = self.client.put('/api/v1/profile/update', headers={'Authorization': tk}, json=update_with)
-        # response = self.client.post('/api/v1/profile/update', json =update_with)
+        response = self.client.put('/api/v1/profile/update', headers={'Authorization': tk}, json=self.data1)
         self.assertEqual(response.get_json(), {'message': 'details successfully updated'})
 
     # already exsting username
     def test_profile_update_with_existing_Username(self):
-        update_with = {'username': os.getenv('name'), 'email_address': os.getenv('t_email')}
+        # already existing username
+        update_with = {'username': 'maryanita', 'email_address': self.data['email_address']}
         # logged in
-        self.response = self.client.post('/api/v1/login',
-                                         json={'username': os.getenv('t_name'), 'password': os.getenv('test_password')})
+        self.response = self.client.post('/api/v1/login', json={'username': 'monyanita', 'password': 'kabuiya123'})
         data = self.response.get_json()
         tk = 'Bearer ' + str(data['token'])
         # access profile
         response = self.client.put('/api/v1/profile/update', headers={'Authorization': tk}, json=update_with)
-        # response = self.client.post('/api/v1/profile/update', json =update_with)
         self.assertEqual(response.get_json(), {'error': 'username already exists'})
         self.assertEqual(response.status_code, 400)
 
     # already exsting email
     def test_profile_update_with_existing_email(self):
-        update_with = {'username': os.getenv('t_name'), 'email_address': os.getenv('email')}
+        update_with = {'username': 'monyanita', 'email_address': 'anitah@gmail.com'}
         # logged in
         self.response = self.client.post('/api/v1/login',
-                                         json={'username': os.getenv('t_name'), 'password': os.getenv('test_password')})
+                                         json={'username': 'monyanita', 'password': 'kabuiya123'})
         data = self.response.get_json()
         tk = 'Bearer ' + str(data['token'])
         # access profile

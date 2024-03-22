@@ -59,7 +59,7 @@ def initialize_database():
             '''
                  DELETE FROM  USERS WHERE USERNAME = %s;
                 ''',
-            (os.getenv('register_name'),)
+            ('mary',)
         )
         cur.execute(
             '''
