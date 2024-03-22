@@ -34,7 +34,7 @@ class TestApp(unittest.TestCase):
         self.data = {'username': 'mary', 'email_address': 'mary@gmail.com',
                      'password': 'kabuiya123'}
         self.data1 = {'username': 'monyanita', 'email_address': 'monyanita@gmail.com',
-                      'password': os.getenv('test_password')}
+                      'password': 'kabuiya123'}
         self.data2 = {'username': 'maryanita', 'email_address': 'anitah@gmail.com',
                       'password': 'kabuiya123'}
 
