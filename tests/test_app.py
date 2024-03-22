@@ -43,7 +43,7 @@ class TestApp(unittest.TestCase):
 
     # REGISTER
     def test_success_registration(self):
-        self.response = self.client.post('/api/v1/register', json=self.data2)
+        self.response = self.client.post('/api/v1/register', json=self.data)
         self.assertEqual(self.response.status_code, 200)
         self.assertIn(b'Registration successful', self.response.data)
 
@@ -55,7 +55,7 @@ class TestApp(unittest.TestCase):
 
     #
     def test_already_existingEmail(self):
-        self.response = self.client.post('/api/v1/register', self.data2)
+        self.response = self.client.post('/api/v1/register', json=self.data2)
         self.assertEqual(self.response.status_code, 400)
         self.assertIn(b'email already exists', self.response.data)
 
