@@ -1,51 +1,54 @@
-# .circleci/config.yml
-
 version: 2.1
 
 jobs:
   build:
     docker:
-      - image: cimg/python:3.8
-    environment:
-      # Set environment variables for database connection
-      TEST_DATABASE_URL: postgresql://postgres@localhost/circle_test
-      DATABASE_HOST: localhost
-      DATABASE_PORT: 5432
-      DATABASE_NAME: testdb
-      DATABASE_USER: postgres
+      - image: circleci/python:3.9
 
+    environment:
+      FLASK_ENV : testing
+      DB_URL: $DB_URL
+      DB_USERNAME: $DB_USER
+      DB_PASSWORD: $DB_PASSWORD
+      DB_NAME : $DB_NAME
+      DB_HOST : localhost
+      pDB_PORT : 5432
 
     steps:
       - checkout
+      - run:
+          name: Print current directory
+          command: pwd
+      - run:
+          name: List files in the directory
+          command: ls -la
 
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y python3-dev libpq-dev  # Install PostgreSQL dependencies
+            pip install -r requirements.txt
+      
 
-      # Install PostgreSQL client
       - run:
-          name: Install PostgreSQL server
-          command: sudo apt-get update && sudo apt-get install postgresql
-            # Start PostgreSQL service
-      - run:
-          name: Start PostgreSQL
-          command: sudo service postgresql start
-      # Install psycopg2
-      - run:
-          name: Install psycopg2
-          command: pip install psycopg2
-      - run:
-          name: Install dotenv
-          command: pip install python-dotenv
-      - run:
-          name: Install Flask
-          command: pip install Flask bcrypt jwt  validate_email
+          name: Set up database
+          command: |
+            
+            python run.py 
+            
 
-      # Run your Python tests
       - run:
-          name: Run Python tests
-          command: python tests/test_app.py
+          name: Run Flask application
+          command: |
+            # Start the Flask application
+            python run.py 
 
-workflows:
-  version: 2
-  build_and_test:
-    jobs:
-      - build
+      - run:
+          name: Run tests
+          command: |
+            # Wait for Flask application to start
+            sleep 5  # Adjust the time according to your application's startup time
+            # Run tests against the running Flask application
+            python -m unittest discover -s tests/
 

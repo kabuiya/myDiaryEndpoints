@@ -5,29 +5,27 @@ import os
 
 def get_db_connection():
     if current_app.config['FLASK_ENV'] == 'testing':
-        con = psycopg2.connect(
-            # dbname=current_app.config.get('DB_NAME', 'testdb'),
-            # user=current_app.config.get('DB_USER', 'postgres'),
-            # password=current_app.config.get('DB_PASSWORD', 'phuier@200'),
-            # host=current_app.config.get('DB_HOST', 'localhost'),
-            # port=current_app.config.get('DB_PORT', 5432)
+        return psycopg2.connect(
+            # dbname=current_app.config.get('DB_NAME'),
+            # user=current_app.config.get('DB_USER'),
+            # password=current_app.config.get('DB_PASSWORD'),
+            # host=current_app.config.get('DB_HOST'),
+            # port=current_app.config.get('DB_PORT')
             host="127.0.0.1",
-            port="5432",
-            dbname="testdb",
-            user="postgres",
-
+            port=5432,
+            user="monicah",
+            password=" ",
+            database="testdb"
 
         )
-        return con
     elif current_app.config['FLASK_ENV'] == 'production':
-        con = psycopg2.connect(
+        return psycopg2.connect(
             dbname=current_app.config.get('DB_NAME'),
             user=current_app.config.get('DB_USER'),
             password=current_app.config.get('DB_PASSWORD'),
-            host=current_app.config.get('DB_HOST', 'localhost'),
-            port=current_app.config.get('DB_PORT', 5432)
+            host=current_app.config.get('DB_HOST'),
+            port=current_app.config.get('DB_PORT')
         )
-        return con
     else:
         raise ValueError("Unknown FLASK_ENV")
 
