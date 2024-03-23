@@ -254,6 +254,33 @@ class TestApp(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('user_entries', response.get_json())
 
+    def test_set_notification(self):
+        self.response = self.client.post('/api/v1/register', json=self.data)
+        self.response = self.client.post('/api/v1/login', json={'username': 'maryanita', 'password': 'kabuiya123'})
+        tk = 'Bearer ' + str(self.response.get_json()['token'])
+        # set notification
+        set_notification = {"notification_time": "00:07"}
+        self.response = self.client.post('/api/v1/turn_on_notifications', headers={'Authorization': tk},
+                                         json=set_notification)
+        self.assertEqual(self.response.status_code, 200)
+        self.assertEqual(self.response.get_json(), {'message': 'Notifications turned on'})
+
+    def test_disable_notification(self):
+        # register
+        self.response = self.client.post('/api/v1/register', json=self.data)
+        # login and get token
+        self.response = self.client.post('/api/v1/login', json={'username': 'maryanita', 'password': 'kabuiya123'})
+        tk = 'Bearer ' + str(self.response.get_json()['token'])
+        # set notification
+        set_notification = {"notification_time": "00:07"}
+        self.response = self.client.post('/api/v1/turn_on_notifications', headers={'Authorization': tk},
+                                         json=set_notification)
+        self.assertEqual(self.response.status_code, 200)
+        # disable notification
+        self.response = self.client.post('/api/v1/disable_notifications', headers={'Authorization': tk})
+        self.assertEqual(self.response.status_code, 200)
+        self.assertEqual(self.response.get_json(), {'message': 'Notifications turned off'})
+
 
 #
 #

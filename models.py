@@ -56,7 +56,14 @@ def initialize_database():
         '''CREATE TABLE IF NOT EXISTS BLACKLIST
             (TOKEN          TEXT      NOT NULL
             );''')
+    cur.execute(
+        '''CREATE TABLE IF NOT EXISTS NOTIFICATIONS
+             (OWNER INT UNIQUE REFERENCES USERS(ID) ON DELETE CASCADE,
+             NOTIFICATIONS_ENABLED BOOLEAN DEFAULT FALSE,
+             NOTIFICATIONS_TIME TIME 
+            );'''
 
+    )
     conn.commit()
 
     cur.close()  # Close curso  # Close connection

@@ -6,7 +6,10 @@ from flask import request, jsonify, Blueprint, current_app
 from flask.cli import load_dotenv
 from validate_email import validate_email
 from models import initialize_database
+from apscheduler.schedulers.background import BackgroundScheduler
+from flask_socketio import SocketIO
 
+socketio = SocketIO()
 load_dotenv()
 views_bp = Blueprint('views', __name__)
 
@@ -500,7 +503,7 @@ def update_entry(user_id, entry_id):
                 cur.close()
                 conn.close()
             return jsonify({'message': 'content successfully updated'}), 200
-        return jsonify({'message': 'content cannot be null'}), 200
+        return jsonify({'message': 'content cannot be null'}), 400
     return jsonify({'message': 'cannot update with empty details '}), 400
 
 
@@ -537,3 +540,96 @@ def delete_entry(user_id, entry_id):
         cur.close()
         conn.close()
     return jsonify({'message': 'content successfully deleted'}), 200
+
+
+# get daily notifications
+# turn on notifications
+# seting daily notifications
+@views_bp.route("/api/v1/turn_on_notifications", methods=['POST'])
+@token_required
+def set_notification(user_id):
+    """
+        Enables notifications for a user and sets the time for the notifications.
+
+        Args:
+            user_id: The ID of the user for whom notifications are being set.
+
+        Returns:
+            A JSON response indicating whether the notifications were successfully turned on,
+            along with an appropriate HTTP status code.
+        """
+    data = request.get_json()
+    notification_time = data.get('notification_time')
+    if not notification_time:
+        return jsonify({'message': 'must set the date to receive the notifications'}), 400
+    conn = initialize_database()
+    with conn.cursor() as cur:
+        cur.execute(
+            '''
+            INSERT INTO NOTIFICATIONS (OWNER, NOTIFICATIONS_ENABLED, NOTIFICATIONS_TIME)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (OWNER)
+            DO UPDATE SET NOTIFICATIONS_ENABLED = %s, NOTIFICATIONS_TIME = %s;
+            ''',
+            (user_id, 'TRUE', notification_time, 'TRUE', notification_time))
+
+        conn.commit()
+    return jsonify({'message': 'Notifications turned on'}), 200
+
+
+# turning off notification
+@views_bp.route("/api/v1/disable_notifications", methods=['POST'])
+@token_required
+def disable_notification(user_id):
+    """
+        Disable notifications for a specific user.
+
+        This endpoint disables notifications for the user with the specified user ID.
+        It sets the NOTIFICATIONS_ENABLED field to FALSE in the NOTIFICATIONS table for that user.
+
+        Args:
+            user_id: The ID of the user for whom notifications are to be disabled.
+
+        Returns:
+            A JSON response indicating whether the operation was successful or not.
+        """
+    conn = initialize_database()
+    with conn.cursor() as cur:
+        cur.execute("SELECT * FROM NOTIFICATIONS WHERE OWNER = %s;", (user_id,))
+        if cur.fetchone() is None:
+            return jsonify({'message': 'No notification settings found for user'}), 404
+        cur.execute(
+            '''
+            UPDATE NOTIFICATIONS SET NOTIFICATIONS_ENABLED = %s
+            WHERE OWNER = %s;
+            ''',
+            ('FALSE', user_id)
+        )
+        conn.commit()
+    conn.close()
+    return jsonify({'message': 'Notifications turned off'}), 200
+
+
+# send notification
+scheduler = BackgroundScheduler()
+
+
+def send_notification():
+    current_time = datetime.datetime.now().strftime('%H:%M')
+    conn = initialize_database()
+    with conn.cursor() as cur:
+        cur.execute(
+            '''
+           SELECT OWNER  FROM NOTIFICATIONS WHERE NOTIFICATIONS_ENABLED =TRUE AND NOTIFICATIONS_TIME =  %s ;
+             ''',
+            (current_time,)
+        )
+        # get every user whose had turned notifications on
+        users = cur.fetchall()
+        for user in users:
+            user_id = user[0]
+            socketio.emit('notification', {'message': f'it\'s time to add an entry to your diary!'})
+
+
+scheduler.add_job(send_notification, 'cron', minute='1')
+scheduler.start()
