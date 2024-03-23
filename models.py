@@ -5,8 +5,16 @@ import os
 
 def get_db_connection():
     if current_app.config['FLASK_ENV'] == 'testing':
+        if os.getenv('LOCAL'):
+            return psycopg2.connect(
+                dbname='testdb',
+                user='',
+                password='',
+                host='localhost',
+                port='5432'
+            )
         return psycopg2.connect(
-            dbname='circle_test',
+            dbname='circle_db',
             user='postgres',
             password='',
             host='localhost',
@@ -51,23 +59,5 @@ def initialize_database():
 
     conn.commit()
 
-    if current_app.config['FLASK_ENV'] == 'testing':
-        conn = get_db_connection()
-        cur = conn.cursor()
-
-        cur.execute(
-            '''
-                 DELETE FROM  USERS ;
-                ''',
-
-        )
-        cur.execute(
-            '''
-                 DELETE FROM  ENTRIES WHERE OWNER = %s;
-                ''',
-            (os.getenv('owner'),)
-        )
     cur.close()  # Close curso  # Close connection
     return conn
-
-

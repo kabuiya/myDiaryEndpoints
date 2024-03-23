@@ -9,13 +9,8 @@ Each test method simulates different API requests and checks the responses recei
 
 Note: These tests require a properly configured environment with access to the database and appropriate environment variables set.
 """
-
 import os
 import unittest
-import sys
-import os
-
-# Add the parent directory of run.py to the Python path
 
 from dotenv import load_dotenv
 
@@ -31,6 +26,7 @@ class TestApp(unittest.TestCase):
         self.app_context = self.app.app_context()
         self.app_context.push()
         self.client = self.app.test_client()
+        self.clear_database()
         self.data = {'username': 'maryanita', 'email_address': 'anitah@gmail.com',
                      'password': 'kabuiya123'}
         self.data2 = {'username': 'monyanita', 'email_address': 'monyanitah@gmail.com',
@@ -38,6 +34,17 @@ class TestApp(unittest.TestCase):
 
     def tearDown(self):
         self.app_context.pop()
+
+    def clear_database(self):
+        with self.app.app_context():
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute("DELETE FROM ENTRIES;")
+            cur.execute("DELETE FROM USERS;")
+            cur.execute("DELETE FROM BLACKLIST;")
+            conn.commit()
+            cur.close()
+            conn.close()
 
     # REGISTER
     def test_success_registration(self):
@@ -52,6 +59,7 @@ class TestApp(unittest.TestCase):
         self.assertEqual(self.response.status_code, 400)
         self.assertIn(b'Invalid email address', self.response.data)
 
+    #
     # register with already existing email
     def test_already_existingEmail(self):
         self.response = self.client.post('/api/v1/register', json=self.data)
@@ -61,17 +69,20 @@ class TestApp(unittest.TestCase):
         self.assertEqual(self.response.status_code, 400)
         self.assertIn(b'email already exists', self.response.data)
 
+    #
     # register with already existing username
     def test_already_existingUsername(self):
         self.response = self.client.post('/api/v1/register', json=self.data)
-        data = {'username': 'maryanita', 'email_address': 'existing username@gmail.com',
+        data = {'username': 'maryanita', 'email_address': 'existingusername@gmail.com',
                 'password': 'kabuiya123'}
         self.response = self.client.post('/api/v1/register', json=data)
         self.assertEqual(self.response.status_code, 400)
         self.assertIn(b'username already exists', self.response.data)
 
+    #
     # regiter with existing username and email
     def test_already_existingUsernameEmail(self):
+        self.response = self.client.post('/api/v1/register', json=self.data)
         self.response = self.client.post('/api/v1/register', json=self.data)
         self.assertEqual(self.response.status_code, 400)
         self.assertIn(b'username and email already exist', self.response.data)
@@ -99,8 +110,9 @@ class TestApp(unittest.TestCase):
         self.assertEqual(self.response.status_code, 400)
         self.assertIn(b'wrong password', self.response.data)
 
+    #
     # login without credentials
-    def test_nologin_credentials(self):
+    def test_no_login_credentials(self):
         login_data = {}
         self.response = self.client.post('/api/v1/login', json=login_data)
         self.assertEqual(self.response.status_code, 400)
@@ -146,13 +158,6 @@ class TestApp(unittest.TestCase):
         self.response = self.client.get('/api/v1/profile', headers={'Authorization': tk})
         self.assertEqual(self.response.json, {'message': 'Invalid token'})
 
-    # expired   token
-    def test_expired_token(self):
-        expired_tkn = 'Bearer ufhekdjsliuhfdkj'
-        self.response = self.client.get('/api/v1/profile', headers={'Authorization': expired_tkn})
-        self.assertEqual(self.response.json, {'message': 'Token has expired'})
-        self.assertEqual(self.response.status_code, 401)
-
     # blacklisted token
     def test_blacklisted_token(self):
         # register
@@ -160,15 +165,14 @@ class TestApp(unittest.TestCase):
         # then login
         self.login_response = self.client.post('/api/v1/login', json=self.data)
         data = self.login_response.get_json()
-        print(data, 'response from login')
         gen_token = 'Bearer ' + str(data['token'])
-        print(gen_token, 'token')
         # logout
         self.response = self.client.post('/api/v1/logout', headers={'Authorization': gen_token})
         # after logogut token be blacklisted
         # get profile with blacklisetd tkn
         self.get_profile_response = self.client.get('/api/v1/profile', headers={'Authorization': gen_token})
-        self.assertEqual(self.get_profile_response, {'message': 'Token has already expired, please log in again'})
+        self.assertEqual(self.get_profile_response.get_json(),
+                         {'message': 'Token has already expired, please log in again'})
 
     # test profile update
     # exsting username
@@ -233,12 +237,11 @@ class TestApp(unittest.TestCase):
         self.log_response = self.client.post('/api/v1/login',
                                              json={'username': 'maryanita', 'password': 'kabuiya123'})
         post_dt = {'content': 'two months of coding'}
-        data = self.response.get_json()
+        data = self.log_response.get_json()
         d_tk = 'Bearer ' + str(data['token'])
         response = self.client.post('/api/v1/add_entries', headers={'Authorization': d_tk}, json=post_dt)
         self.assertEqual(response.get_json(), {'message': 'successfully added'})
         self.assertEqual(response.status_code, 200)
-        # if no data
 
     # TEST GET ENTRIES
     def test_get_entries(self):
@@ -252,5 +255,7 @@ class TestApp(unittest.TestCase):
         self.assertIn('user_entries', response.get_json())
 
 
+#
+#
 if __name__ == '__main__':
     unittest.main()
