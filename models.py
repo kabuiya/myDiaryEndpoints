@@ -6,7 +6,7 @@ import os
 def get_db_connection():
     if current_app.config['FLASK_ENV'] == 'testing':
         return psycopg2.connect(
-            dbname='testdb',
+            dbname='circle_ci',
             user='postgres',
             password='',
             host='localhost',
