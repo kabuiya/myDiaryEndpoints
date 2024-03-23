@@ -186,7 +186,7 @@ def login():
                     if check_password(password, hashed_password):
                         token = jwt.encode(
                             {'user_id': user_id, 'username': username,
-                             'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=20)},
+                             'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)},
                             current_app.config['SECRET_KEY'])
                         return jsonify({'message': 'successfully, logged in', 'token': token}), 200
                     return jsonify({'Error message': 'wrong password'}), 400

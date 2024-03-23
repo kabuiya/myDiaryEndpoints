@@ -158,30 +158,32 @@ class TestApp(unittest.TestCase):
         # register
         self.response = self.client.post('/api/v1/register', json=self.data)
         # then login
-        self.response = self.client.post('/api/v1/login', json=self.data)
-        data = self.response.get_json()
+        self.login_response = self.client.post('/api/v1/login', json=self.data)
+        data = self.login_response.get_json()
         print(data, 'response from login')
-        tkn = 'Bearer ' + str(data['token'])
-        print(tkn, 'token')
+        gen_token = 'Bearer ' + str(data['token'])
+        print(gen_token, 'token')
         # logout
-        self.response = self.client.post('/api/v1/logout', headers={'Authorization': tkn})
+        self.response = self.client.post('/api/v1/logout', headers={'Authorization': gen_token})
         # after logogut token be blacklisted
         # get profile with blacklisetd tkn
-        self.response = self.client.get('/api/v1/profile', headers={'Authorization': tkn})
-        self.assertEqual(self.response.json, {'message': 'Token has already expired, please log in again'})
+        self.get_profile_response = self.client.get('/api/v1/profile', headers={'Authorization': gen_token})
+        self.assertEqual(self.get_profile_response, {'message': 'Token has already expired, please log in again'})
 
     # test profile update
     # exsting username
     # add other tests
     def test_profile_update(self):
+        # register
         self.response = self.client.post('/api/v1/register', json=self.data)
-        # logged in
-        self.response = self.client.post('/api/v1/login',
-                                         json=self.data)
-        data = self.response.get_json()
-        tk = 'Bearer ' + str(data['token'])
+        # log in
+        self.res = self.client.post('/api/v1/login',
+                                    json=self.data)
+        res_data = self.res.get_json()
+        # get token from response
+        res_token = 'Bearer ' + str(res_data['token'])
         # access profile
-        response = self.client.put('/api/v1/profile/update', headers={'Authorization': tk}, json=self.data)
+        response = self.client.put('/api/v1/profile/update', headers={'Authorization': res_token}, json=self.data)
         self.assertEqual(response.get_json(), {'message': 'details successfully updated'})
 
     # already exsting username(maryanita)
@@ -227,13 +229,13 @@ class TestApp(unittest.TestCase):
 
     # test user add entries
     def test_post_entries(self):
-        self.response = self.client.post('/api/v1/register', json=self.data)
+        self.reg_response = self.client.post('/api/v1/register', json=self.data)
+        self.log_response = self.client.post('/api/v1/login',
+                                             json={'username': 'maryanita', 'password': 'kabuiya123'})
         post_dt = {'content': 'two months of coding'}
-        self.response = self.client.post('/api/v1/login',
-                                         json={'username': 'maryanita', 'password': 'kabuiya123'})
         data = self.response.get_json()
-        tk = 'Bearer ' + str(data['token'])
-        response = self.client.post('/api/v1/add_entries', headers={'Authorization': tk}, json=post_dt)
+        d_tk = 'Bearer ' + str(data['token'])
+        response = self.client.post('/api/v1/add_entries', headers={'Authorization': d_tk}, json=post_dt)
         self.assertEqual(response.get_json(), {'message': 'successfully added'})
         self.assertEqual(response.status_code, 200)
         # if no data

@@ -6,7 +6,7 @@ import os
 def get_db_connection():
     if current_app.config['FLASK_ENV'] == 'testing':
         return psycopg2.connect(
-            dbname='circle_test',
+            dbname='testdb',
             user='postgres',
             password='',
             host='localhost',
@@ -57,9 +57,9 @@ def initialize_database():
 
         cur.execute(
             '''
-                 DELETE FROM  USERS WHERE USERNAME = %s;
+                 DELETE FROM  USERS ;
                 ''',
-            ('mary',)
+
         )
         cur.execute(
             '''
