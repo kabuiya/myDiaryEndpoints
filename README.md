@@ -1,0 +1,3 @@
+My diary project (API ENDPOINTS
+[![CircleCI](https://dl.circleci.com/status-badge/img/circleci/3WDH8NqBWqqcfhediMABwD/7604d3a9-e056-4aba-b688-41eadd483819/tree/main.svg?style=svg&circle-token=CCIPRJ_KcSEMznZ38G7aY3HN41vT_5390d1e96a0b759451f6a408c6b7bd9e14f43f40)](https://dl.circleci.com/status-badge/redirect/circleci/3WDH8NqBWqqcfhediMABwD/7604d3a9-e056-4aba-b688-41eadd483819/tree/main)
+[![Coverage Status](https://coveralls.io/repos/github/kabuiya/myDiaryEndpoints/badge.svg)](https://coveralls.io/github/kabuiya/myDiaryEndpoints)
