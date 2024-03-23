@@ -47,13 +47,11 @@ jobs:
           name: Run Tests with Coverage
           command: |
             coverage run -m unittest discover
-            
 
       - run:
           name: Debug .coveralls.yml
           command: |
             cat .coveralls.yml
-            
 
       - run:
           name: Upload Coverage to Coveralls
