@@ -14,7 +14,7 @@ def get_db_connection():
                 port='5432'
             )
         return psycopg2.connect(
-            dbname='circle_db',
+            dbname='circle_test',
             user='postgres',
             password='',
             host='localhost',
