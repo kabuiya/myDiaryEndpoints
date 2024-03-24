@@ -389,14 +389,13 @@ def post_entries(user_id):
             cur.execute(
                 '''
                 INSERT INTO ENTRIES (CONTENT, OWNER)
-                VALUES (%s, %s)
+                VALUES (%s, %s) RETURNING ID
                 ''',
                 (data['content'], user_id)
             )
+            entry_id = cur.fetchone()[0]
             conn.commit()
-            cur.close()
-            conn.close()
-        return jsonify({'message': 'successfully added'}), 200
+        return jsonify({'message': 'successfully added', 'entry_id': entry_id}), 200
     return jsonify({'Error message': 'data entry details must be available'}), 400
 
 
@@ -434,7 +433,7 @@ def get_entries(user_id):
 
 
 # get specific entry
-@views_bp.route("/api/v1/get_entry/<int:entryId>", methods=['GET'])
+@views_bp.route("/api/v1/get_entry/<int:entry_id>", methods=['GET'])
 @token_required
 def get_entry(user_id, entry_id):
     """
@@ -458,16 +457,22 @@ def get_entry(user_id, entry_id):
              ''',
             (user_id, entry_id,)
         )
-        cur.close()
         user_data = cur.fetchone()
         if user_data:
-            return jsonify({'user_entry': user_data})
+            entry = {
+                'id': user_data[0],
+                'content': user_data[1],
+                'date': user_data[2],
+                'owner': user_data[3]
+            }
+
+            return jsonify({'user_entry': entry})
         else:
             return jsonify({'message': 'not found'})
 
 
 # update an entry
-@views_bp.route("/api/v1/update_entry/<int:entryId>", methods=['PUT'])
+@views_bp.route("/api/v1/update_entry/<int:entry_id>", methods=['PUT'])
 @token_required
 def update_entry(user_id, entry_id):
     """
@@ -500,15 +505,13 @@ def update_entry(user_id, entry_id):
                     (content, user_id, entry_id,)
                 )
                 conn.commit()
-                cur.close()
-                conn.close()
             return jsonify({'message': 'content successfully updated'}), 200
         return jsonify({'message': 'content cannot be null'}), 400
     return jsonify({'message': 'cannot update with empty details '}), 400
 
 
 # delete entry
-@views_bp.route("/api/v1/delete_entry/<int:entryId>", methods=['DELETE'])
+@views_bp.route("/api/v1/delete_entry/<int:entry_id>", methods=['DELETE'])
 @token_required
 def delete_entry(user_id, entry_id):
     """

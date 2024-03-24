@@ -240,7 +240,8 @@ class TestApp(unittest.TestCase):
         data = self.log_response.get_json()
         d_tk = 'Bearer ' + str(data['token'])
         response = self.client.post('/api/v1/add_entries', headers={'Authorization': d_tk}, json=post_dt)
-        self.assertEqual(response.get_json(), {'message': 'successfully added'})
+        self.assertEqual(response.get_json(),
+                         {'entry_id': response.get_json()['entry_id'], 'message': 'successfully added'})
         self.assertEqual(response.status_code, 200)
 
     # TEST GET ENTRIES
@@ -253,6 +254,42 @@ class TestApp(unittest.TestCase):
         response = self.client.get('/api/v1/get_entries', headers={'Authorization': tk})
         self.assertEqual(response.status_code, 200)
         self.assertIn('user_entries', response.get_json())
+
+    def test_get_entry(self):
+        # Register and log in a user
+        self.client.post('/api/v1/register', json=self.data)
+        login_response = self.client.post('/api/v1/login', json={'username': 'maryanita', 'password': 'kabuiya123'})
+        token = 'Bearer ' + str(login_response.get_json()['token'])
+
+        # Add an entry
+        entry_data = {'content': 'coding is fun'}
+        add_response = self.client.post('/api/v1/add_entries', headers={'Authorization': token}, json=entry_data)
+        entry_id = add_response.get_json()['entry_id']
+
+        # Retrieve the entry
+        get_response = self.client.get(f'/api/v1/get_entry/{entry_id}', headers={'Authorization': token})
+
+        self.assertEqual(get_response.status_code, 200)
+        self.assertEqual(get_response.get_json()['user_entry']['content'], 'coding is fun')
+
+    def test_update_entry(self):
+        # Register and log in a user
+        self.client.post('/api/v1/register', json=self.data)
+        login_response = self.client.post('/api/v1/login', json={'username': 'maryanita', 'password': 'kabuiya123'})
+        token = 'Bearer ' + str(login_response.get_json()['token'])
+
+        # Add an entry
+        entry_data = {'content': 'Original content'}
+        add_response = self.client.post('/api/v1/add_entries', headers={'Authorization': token}, json=entry_data)
+        entry_id = add_response.get_json()['entry_id']
+
+        # Update the entry
+        updated_data = {'content': 'Updated content'}
+        update_response = self.client.put(f'/api/v1/update_entry/{entry_id}', headers={'Authorization': token},
+                                          json=updated_data)
+
+        self.assertEqual(update_response.status_code, 200)
+        self.assertEqual(update_response.get_json(), {'message': 'content successfully updated'})
 
     def test_set_notification(self):
         self.response = self.client.post('/api/v1/register', json=self.data)
@@ -281,8 +318,19 @@ class TestApp(unittest.TestCase):
         self.assertEqual(self.response.status_code, 200)
         self.assertEqual(self.response.get_json(), {'message': 'Notifications turned off'})
 
+    def test_disable_notification_no_notification_time(self):
+        # register
+        self.response = self.client.post('/api/v1/register', json=self.data)
+        # login and get token
+        self.response = self.client.post('/api/v1/login', json={'username': 'maryanita', 'password': 'kabuiya123'})
+        tk = 'Bearer ' + str(self.response.get_json()['token'])
+        # set notification
+        set_notification = {}
+        self.response = self.client.post('/api/v1/turn_on_notifications', headers={'Authorization': tk},
+                                         json=set_notification)
+        self.assertEqual(self.response.get_json(), {'message': 'must set the date to receive the notifications'})
 
-#
+
 #
 if __name__ == '__main__':
     unittest.main()

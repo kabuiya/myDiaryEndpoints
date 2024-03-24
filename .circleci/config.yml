@@ -49,11 +49,6 @@ jobs:
             coverage run -m unittest discover
 
       - run:
-          name: Debug .coveralls.yml
-          command: |
-            cat .coveralls.yml
-
-      - run:
           name: Upload Coverage to Coveralls
           command: |
             coveralls
