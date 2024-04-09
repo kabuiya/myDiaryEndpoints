@@ -2,14 +2,12 @@ from functools import wraps
 import datetime
 import bcrypt
 import jwt
+import psycopg2.errors
 from flask import request, jsonify, Blueprint, current_app
 from flask.cli import load_dotenv
 from validate_email import validate_email
 from models import initialize_database
-from apscheduler.schedulers.background import BackgroundScheduler
-from flask_socketio import SocketIO
 
-socketio = SocketIO()
 load_dotenv()
 views_bp = Blueprint('views', __name__)
 
@@ -94,47 +92,52 @@ def user_registration():
       Raises:
           ValueError: If the JSON payload is missing any required fields.
       """
+
     data = request.get_json()
     if 'email_address' in data and 'username' in data and 'password' in data:
-        email = data['email_address']
-        username = data['username']
-        plaintext_password = data['password']
+        if (data.get('email_address') != '') and (data.get('username') != '') and (data.get('password') != ''):
+            email = data['email_address']
+            username = data['username']
+            plaintext_password = data['password']
 
-        # Get database connection
-        conn = initialize_database()
-        cur = conn.cursor()
+            # Get database connection
+            conn = initialize_database()
+            cur = conn.cursor()
 
-        try:
-            # Check if email already exists in db
-            cur.execute('''SELECT COUNT(*) FROM USERS WHERE EMAIL_ADDRESS = %s''', (email,))
-            email_exists = cur.fetchone()[0] > 0
+            try:
 
-            # Check if username already exists in the database
-            cur.execute('''SELECT COUNT(*) FROM USERS WHERE USERNAME = %s''', (username,))
-            username_exists = cur.fetchone()[0] > 0
+                # Check if email already exists in db
+                cur.execute('''SELECT COUNT(*) FROM USERS WHERE EMAIL_ADDRESS = %s''', (email,))
+                email_exists = cur.fetchone()[0] > 0
 
-            if email_exists and username_exists:
-                return jsonify({'error': 'username and email already exist'}), 400
-            elif username_exists:
-                return jsonify({'error': 'username already exists'}), 400
-            elif email_exists:
-                return jsonify({'error': 'email already exists'}), 400
+                # Check if username already exists in the database
+                cur.execute('''SELECT COUNT(*) FROM USERS WHERE USERNAME = %s''', (username,))
+                username_exists = cur.fetchone()[0] > 0
 
-            elif validate_email(email):
-                hashed_password = hashed_pass(plaintext_password)
-                # Add user to db
-                cur.execute('''INSERT INTO USERS (USERNAME, EMAIL_ADDRESS, PASSWORD_HASH)
-                                VALUES (%s, %s, %s)''', (username, email, hashed_password))
-                conn.commit()
-                return jsonify({'message': 'Registration successful'}), 200
-            else:
-                return jsonify({'error': 'Invalid email address'}), 400
-        finally:
-            # Close cursor and connection
-            cur.close()
-            conn.close()
+                if email_exists and username_exists:
+                    return jsonify({'error': {'details': 'username and email already exist'}}), 400
+                elif username_exists:
+                    return jsonify({'error': {'username': 'username already exists'}}), 400
+                elif email_exists:
+                    return jsonify({'error': {'email': 'email already exists'}}), 400
 
-    return jsonify({'error': 'All fields must be filled'}), 400
+                elif validate_email(email):
+                    hashed_password = hashed_pass(plaintext_password)
+                    # Add user to db
+                    cur.execute('''INSERT INTO USERS (USERNAME, EMAIL_ADDRESS, PASSWORD_HASH)
+                                    VALUES (%s, %s, %s)''', (username, email, hashed_password))
+                    conn.commit()
+                    return jsonify({'message': {'success': 'Registration successful'}}), 200
+                else:
+                    return jsonify({'error': {'email': 'Invalid email address'}}), 400
+            except psycopg2.errors.StringDataRightTruncation:
+                return jsonify({'error': {'username': 'Username is too long'}}), 400
+            finally:
+                # Close cursor and connection
+                cur.close()
+                conn.close()
+        return jsonify({'error': {'details': 'cannot use null values'}}), 400
+    return jsonify({'error': {'details': 'All fields must be filled'}}), 400
 
 
 def hashed_pass(plaintext_password):
@@ -171,8 +174,9 @@ def login():
      """
 
     data = request.get_json()
-    if data:
-        if 'username' in data and 'password' in data:
+
+    if 'username' in data and 'password' in data:
+        if (data.get('username') != '') and (data.get('password') != ''):
             username = data['username']
             password = data['password']
             conn = initialize_database()  # Establish database connection
@@ -191,11 +195,12 @@ def login():
                             {'user_id': user_id, 'username': username,
                              'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)},
                             current_app.config['SECRET_KEY'])
-                        return jsonify({'message': 'successfully, logged in', 'token': token}), 200
-                    return jsonify({'Error message': 'wrong password'}), 400
-                return jsonify({'Error message': 'invalid username! User not found'}), 400
-        return jsonify({'Error message': 'username and password are required'}), 400
-    return jsonify({'Error message': 'login details must be available'}), 400
+                        return jsonify({'message': {'success': 'successfully, logged in', 'token': token}}), 200
+                        # return jsonify({'success': 'successfully, logged in', 'token': token}), 200
+                    return jsonify({'Error': {'password': 'wrong password'}}), 400
+                return jsonify({'Error': {'details': 'user doesnt exist'}}), 400
+        return jsonify({'Error': {'details': 'username and password are required'}}), 400
+    return jsonify({'Error': {'details': 'login details cannot be empty'}}), 400
 
 
 def check_password(passwd, hashed_password_hex):
@@ -383,7 +388,7 @@ def post_entries(user_id):
 
     """
     data = request.get_json()
-    if data:
+    if data['content'] != '':
         conn = initialize_database()
         with conn.cursor() as cur:
             cur.execute(
@@ -395,8 +400,8 @@ def post_entries(user_id):
             )
             entry_id = cur.fetchone()[0]
             conn.commit()
-        return jsonify({'message': 'successfully added', 'entry_id': entry_id}), 200
-    return jsonify({'Error message': 'data entry details must be available'}), 400
+        return jsonify({'success': 'successfully added', 'entry_id': entry_id}), 200
+    return jsonify({'Error': 'diary entry details must be available'}), 400
 
 
 # get entries of specific user
@@ -505,7 +510,7 @@ def update_entry(user_id, entry_id):
                     (content, user_id, entry_id,)
                 )
                 conn.commit()
-            return jsonify({'message': 'content successfully updated'}), 200
+            return jsonify({'message': 'content successfully updated', 'content': content}), 200
         return jsonify({'message': 'content cannot be null'}), 400
     return jsonify({'message': 'cannot update with empty details '}), 400
 
@@ -543,96 +548,3 @@ def delete_entry(user_id, entry_id):
         cur.close()
         conn.close()
     return jsonify({'message': 'content successfully deleted'}), 200
-
-
-# get daily notifications
-# turn on notifications
-# seting daily notifications
-@views_bp.route("/api/v1/turn_on_notifications", methods=['POST'])
-@token_required
-def set_notification(user_id):
-    """
-        Enables notifications for a user and sets the time for the notifications.
-
-        Args:
-            user_id: The ID of the user for whom notifications are being set.
-
-        Returns:
-            A JSON response indicating whether the notifications were successfully turned on,
-            along with an appropriate HTTP status code.
-        """
-    data = request.get_json()
-    notification_time = data.get('notification_time')
-    if not notification_time:
-        return jsonify({'message': 'must set the date to receive the notifications'}), 400
-    conn = initialize_database()
-    with conn.cursor() as cur:
-        cur.execute(
-            '''
-            INSERT INTO NOTIFICATIONS (OWNER, NOTIFICATIONS_ENABLED, NOTIFICATIONS_TIME)
-            VALUES (%s, %s, %s)
-            ON CONFLICT (OWNER)
-            DO UPDATE SET NOTIFICATIONS_ENABLED = %s, NOTIFICATIONS_TIME = %s;
-            ''',
-            (user_id, 'TRUE', notification_time, 'TRUE', notification_time))
-
-        conn.commit()
-    return jsonify({'message': 'Notifications turned on'}), 200
-
-
-# turning off notification
-@views_bp.route("/api/v1/disable_notifications", methods=['POST'])
-@token_required
-def disable_notification(user_id):
-    """
-        Disable notifications for a specific user.
-
-        This endpoint disables notifications for the user with the specified user ID.
-        It sets the NOTIFICATIONS_ENABLED field to FALSE in the NOTIFICATIONS table for that user.
-
-        Args:
-            user_id: The ID of the user for whom notifications are to be disabled.
-
-        Returns:
-            A JSON response indicating whether the operation was successful or not.
-        """
-    conn = initialize_database()
-    with conn.cursor() as cur:
-        cur.execute("SELECT * FROM NOTIFICATIONS WHERE OWNER = %s;", (user_id,))
-        if cur.fetchone() is None:
-            return jsonify({'message': 'No notification settings found for user'}), 404
-        cur.execute(
-            '''
-            UPDATE NOTIFICATIONS SET NOTIFICATIONS_ENABLED = %s
-            WHERE OWNER = %s;
-            ''',
-            ('FALSE', user_id)
-        )
-        conn.commit()
-    conn.close()
-    return jsonify({'message': 'Notifications turned off'}), 200
-
-
-# send notification
-scheduler = BackgroundScheduler()
-
-
-def send_notification():
-    current_time = datetime.datetime.now().strftime('%H:%M')
-    conn = initialize_database()
-    with conn.cursor() as cur:
-        cur.execute(
-            '''
-           SELECT OWNER  FROM NOTIFICATIONS WHERE NOTIFICATIONS_ENABLED =TRUE AND NOTIFICATIONS_TIME =  %s ;
-             ''',
-            (current_time,)
-        )
-        # get every user whose had turned notifications on
-        users = cur.fetchall()
-        for user in users:
-            user_id = user[0]
-            socketio.emit('notification', {'message': f'it\'s time to add an entry to your diary!'})
-
-
-scheduler.add_job(send_notification, 'cron', minute='1')
-scheduler.start()

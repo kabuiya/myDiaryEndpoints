@@ -11,7 +11,7 @@ def get_db_connection():
                 user='',
                 password='',
                 host='localhost',
-                port='5432'
+                port='5433'
             )
         return psycopg2.connect(
             dbname='circle_test',
@@ -52,18 +52,12 @@ def initialize_database():
             DATE             DATE DEFAULT CURRENT_DATE,
             OWNER         INT      references USERS(ID) ON DELETE CASCADE
             );''')
+    # blacklisting tokens on logout
     cur.execute(
         '''CREATE TABLE IF NOT EXISTS BLACKLIST
             (TOKEN          TEXT      NOT NULL
             );''')
-    cur.execute(
-        '''CREATE TABLE IF NOT EXISTS NOTIFICATIONS
-             (OWNER INT UNIQUE REFERENCES USERS(ID) ON DELETE CASCADE,
-             NOTIFICATIONS_ENABLED BOOLEAN DEFAULT FALSE,
-             NOTIFICATIONS_TIME TIME 
-            );'''
 
-    )
     conn.commit()
 
     cur.close()  # Close curso  # Close connection

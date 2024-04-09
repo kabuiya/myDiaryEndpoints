@@ -100,7 +100,7 @@ class TestApp(unittest.TestCase):
         login_data = {'username': 'user_name', 'password': 'kabuiya123'}
         self.response = self.client.post('/api/v1/login', json=login_data)
         self.assertEqual(self.response.status_code, 400)
-        self.assertIn(b'invalid username! User not found', self.response.data)
+        self.assertIn(b'user doesnt exist', self.response.data)
 
     # login with wrong password
     def test_invalid_password(self):
@@ -116,14 +116,14 @@ class TestApp(unittest.TestCase):
         login_data = {}
         self.response = self.client.post('/api/v1/login', json=login_data)
         self.assertEqual(self.response.status_code, 400)
-        self.assertIn(b'login details must be available', self.response.data)
+        self.assertIn(b'login details cannot be empty', self.response.data)
 
     # login with missing credential
     def test_missing_login_credential(self):
         login_data = {'username': 'maryanita'}  # missing pswd
         self.response = self.client.post('/api/v1/login', json=login_data)
         self.assertEqual(self.response.status_code, 400)
-        self.assertIn(b'username and password are required', self.response.data)
+        self.assertIn(b'login details cannot be empty', self.response.data)
 
     # successful login
     def test_login_success(self):
@@ -132,9 +132,8 @@ class TestApp(unittest.TestCase):
                                     json={'username': 'maryanita', 'password': 'kabuiya123'})
         self.assertEqual(response.status_code, 200)
         data = response.get_json()
-        self.assertIn('successfully, logged in', data['message'])
-        self.assertEqual(data, {'message': 'successfully, logged in', 'token': data['token']})
-        self.assertIn('token', data)
+        self.assertEqual(data, {'message': {'success': 'successfully, logged in', 'token': data['message']['token']}})
+        # self.assertIn('token', data)
 
     # wit authorization token
     def test_get_profile(self):
@@ -143,7 +142,7 @@ class TestApp(unittest.TestCase):
         response = self.client.post('/api/v1/login',
                                     json=self.login_data)
         data = response.get_json()
-        valid_tkn = 'Bearer ' + str(data['token'])
+        valid_tkn = 'Bearer ' + str(data['message']['token'])
         self.response = self.client.get('/api/v1/profile', headers={'Authorization': valid_tkn})
         self.assertEqual(self.response.json, {"details": ['anitah@gmail.com', 'maryanita']})
 
@@ -165,7 +164,7 @@ class TestApp(unittest.TestCase):
         # then login
         self.login_response = self.client.post('/api/v1/login', json=self.data)
         data = self.login_response.get_json()
-        gen_token = 'Bearer ' + str(data['token'])
+        gen_token = 'Bearer ' + str(data['message']['token'])
         # logout
         self.response = self.client.post('/api/v1/logout', headers={'Authorization': gen_token})
         # after logogut token be blacklisted
@@ -185,7 +184,7 @@ class TestApp(unittest.TestCase):
                                     json=self.data)
         res_data = self.res.get_json()
         # get token from response
-        res_token = 'Bearer ' + str(res_data['token'])
+        res_token = 'Bearer ' + str(res_data['message']['token'])
         # access profile
         response = self.client.put('/api/v1/profile/update', headers={'Authorization': res_token}, json=self.data)
         self.assertEqual(response.get_json(), {'message': 'details successfully updated'})
@@ -199,7 +198,7 @@ class TestApp(unittest.TestCase):
         # logged in
         self.response = self.client.post('/api/v1/login', json={'username': 'monyanita', 'password': 'kabuiya123'})
         data = self.response.get_json()
-        tk = 'Bearer ' + str(data['token'])
+        tk = 'Bearer ' + str(data['message']['token'])
         # access profile
         response = self.client.put('/api/v1/profile/update', headers={'Authorization': tk}, json=update_with)
         self.assertEqual(response.get_json(), {'error': 'username already exists'})
@@ -214,7 +213,7 @@ class TestApp(unittest.TestCase):
         self.response = self.client.post('/api/v1/login',
                                          json={'username': 'monyanita', 'password': 'kabuiya123'})
         data = self.response.get_json()
-        tk = 'Bearer ' + str(data['token'])
+        tk = 'Bearer ' + str(data['message']['token'])
         # access profile
         response = self.client.put('/api/v1/profile/update', headers={'Authorization': tk}, json=update_with)
         self.assertEqual(response.get_json(), {'error': 'email already exists'})
@@ -226,7 +225,7 @@ class TestApp(unittest.TestCase):
         self.response = self.client.post('/api/v1/login',
                                          json={'username': 'maryanita', 'password': 'kabuiya123'})
         data = self.response.get_json()
-        tk = 'Bearer ' + str(data['token'])
+        tk = 'Bearer ' + str(data['message']['token'])
         self.response = self.client.post('/api/v1/logout', headers={'Authorization': tk})
         self.assertEqual(self.response.get_json(), {'message': 'successfully logged out'})
         self.assertEqual(self.response.status_code, 200)
@@ -238,10 +237,10 @@ class TestApp(unittest.TestCase):
                                              json={'username': 'maryanita', 'password': 'kabuiya123'})
         post_dt = {'content': 'two months of coding'}
         data = self.log_response.get_json()
-        d_tk = 'Bearer ' + str(data['token'])
+        d_tk = 'Bearer ' + str(data['message']['token'])
         response = self.client.post('/api/v1/add_entries', headers={'Authorization': d_tk}, json=post_dt)
         self.assertEqual(response.get_json(),
-                         {'entry_id': response.get_json()['entry_id'], 'message': 'successfully added'})
+                         {'entry_id': response.get_json()['entry_id'], 'success': 'successfully added'})
         self.assertEqual(response.status_code, 200)
 
     # TEST GET ENTRIES
@@ -250,7 +249,7 @@ class TestApp(unittest.TestCase):
         self.response = self.client.post('/api/v1/login',
                                          json={'username': 'maryanita', 'password': 'kabuiya123'})
         data = self.response.get_json()
-        tk = 'Bearer ' + str(data['token'])
+        tk = 'Bearer ' + str(data['message']['token'])
         response = self.client.get('/api/v1/get_entries', headers={'Authorization': tk})
         self.assertEqual(response.status_code, 200)
         self.assertIn('user_entries', response.get_json())
@@ -259,7 +258,7 @@ class TestApp(unittest.TestCase):
         # Register and log in a user
         self.client.post('/api/v1/register', json=self.data)
         login_response = self.client.post('/api/v1/login', json={'username': 'maryanita', 'password': 'kabuiya123'})
-        token = 'Bearer ' + str(login_response.get_json()['token'])
+        token = 'Bearer ' + str(login_response.get_json()['message']['token'])
 
         # Add an entry
         entry_data = {'content': 'coding is fun'}
@@ -276,7 +275,7 @@ class TestApp(unittest.TestCase):
         # Register and log in a user
         self.client.post('/api/v1/register', json=self.data)
         login_response = self.client.post('/api/v1/login', json={'username': 'maryanita', 'password': 'kabuiya123'})
-        token = 'Bearer ' + str(login_response.get_json()['token'])
+        token = 'Bearer ' + str(login_response.get_json()['message']['token'])
 
         # Add an entry
         entry_data = {'content': 'Original content'}
@@ -289,48 +288,27 @@ class TestApp(unittest.TestCase):
                                           json=updated_data)
 
         self.assertEqual(update_response.status_code, 200)
-        self.assertEqual(update_response.get_json(), {'message': 'content successfully updated'})
+        self.assertEqual(update_response.get_json(),
+                         {'content': 'Updated content', 'message': 'content successfully updated'})
 
-    def test_set_notification(self):
-        self.response = self.client.post('/api/v1/register', json=self.data)
-        self.response = self.client.post('/api/v1/login', json={'username': 'maryanita', 'password': 'kabuiya123'})
-        tk = 'Bearer ' + str(self.response.get_json()['token'])
-        # set notification
-        set_notification = {"notification_time": "00:07"}
-        self.response = self.client.post('/api/v1/turn_on_notifications', headers={'Authorization': tk},
-                                         json=set_notification)
-        self.assertEqual(self.response.status_code, 200)
-        self.assertEqual(self.response.get_json(), {'message': 'Notifications turned on'})
+    # delete entry
+    def test_delete_entry(self):
+        # Register and log in a user
+        self.client.post('/api/v1/register', json=self.data)
+        login_response = self.client.post('/api/v1/login', json={'username': 'maryanita', 'password': 'kabuiya123'})
+        token = 'Bearer ' + str(login_response.get_json()['message']['token'])
 
-    def test_disable_notification(self):
-        # register
-        self.response = self.client.post('/api/v1/register', json=self.data)
-        # login and get token
-        self.response = self.client.post('/api/v1/login', json={'username': 'maryanita', 'password': 'kabuiya123'})
-        tk = 'Bearer ' + str(self.response.get_json()['token'])
-        # set notification
-        set_notification = {"notification_time": "00:07"}
-        self.response = self.client.post('/api/v1/turn_on_notifications', headers={'Authorization': tk},
-                                         json=set_notification)
-        self.assertEqual(self.response.status_code, 200)
-        # disable notification
-        self.response = self.client.post('/api/v1/disable_notifications', headers={'Authorization': tk})
-        self.assertEqual(self.response.status_code, 200)
-        self.assertEqual(self.response.get_json(), {'message': 'Notifications turned off'})
+        # Add an entry
+        entry_data = {'content': 'Original content'}
+        add_response = self.client.post('/api/v1/add_entries', headers={'Authorization': token}, json=entry_data)
+        entry_id = add_response.get_json()['entry_id']
 
-    def test_disable_notification_no_notification_time(self):
-        # register
-        self.response = self.client.post('/api/v1/register', json=self.data)
-        # login and get token
-        self.response = self.client.post('/api/v1/login', json={'username': 'maryanita', 'password': 'kabuiya123'})
-        tk = 'Bearer ' + str(self.response.get_json()['token'])
-        # set notification
-        set_notification = {}
-        self.response = self.client.post('/api/v1/turn_on_notifications', headers={'Authorization': tk},
-                                         json=set_notification)
-        self.assertEqual(self.response.get_json(), {'message': 'must set the date to receive the notifications'})
+        # delete the entry
+        update_response = self.client.delete(f'/api/v1/delete_entry/{entry_id}', headers={'Authorization': token})
+        self.assertEqual(update_response.status_code, 200)
+        self.assertEqual(update_response.get_json(),
+                         {'message': 'content successfully deleted'})
 
 
-#
 if __name__ == '__main__':
     unittest.main()

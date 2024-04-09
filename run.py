@@ -14,13 +14,13 @@ Functions:
 import os
 
 from flask import Flask
+from flask_cors import CORS
 from config.config import TestingConfig, ProductionConfig
 from models import initialize_database
-from views.views import views_bp, socketio
+from views.views import views_bp
 
 
 # Your existing route definitions and functions...
-
 
 def create_app():
     """
@@ -45,10 +45,11 @@ def create_app():
     app.register_blueprint(views_bp)
     with app.app_context():
         initialize_database()
-    socketio.init_app(app)
+
+    CORS(app)
     return app
 
 
 if __name__ == "__main__":
     app = create_app()
-    socketio.run(app, allow_unsafe_werkzeug=True)
+    app.run()
