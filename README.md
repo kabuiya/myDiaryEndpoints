@@ -31,8 +31,7 @@ To run this application locally, follow these steps:
 
 ## Running Tests
 To run the unit tests, execute the following command:
-```bash
-python -m unittest discover tests 
+`python -m unittest discover tests`
 
 
 # License
