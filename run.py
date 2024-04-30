@@ -46,7 +46,7 @@ def create_app():
     with app.app_context():
         initialize_database()
 
-    CORS(app)
+    CORS(app, origins=["http: // localhost: 5000"])
     return app
 
 

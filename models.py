@@ -11,14 +11,14 @@ def get_db_connection():
                 user='',
                 password='',
                 host='localhost',
-                port='5432'
+                port='5433'
             )
         return psycopg2.connect(
             dbname='circle_test',
             user='postgres',
             password='',
             host='localhost',
-            port='5432'
+            port='5433'
 
         )
     elif current_app.config['FLASK_ENV'] == 'production':
@@ -59,6 +59,5 @@ def initialize_database():
             );''')
 
     conn.commit()
-
     cur.close()  # Close curso  # Close connection
     return conn
