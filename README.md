@@ -33,15 +33,15 @@ Welcome to My Diary Project! This project aims to provide a simple and intuitive
 
 ## Technologies Used
 
-    - **Frontend:** HTML, CSS, JavaScript, react 
-    [[fronted: with js](https://github.com/kabuiya/myjournal)]
-    [[fronted: with react](https://github.com/kabuiya/my-Journal)]
-    - **Backend:** Python, Flask RESTful
-    - **Database:** PostgreSQL (chosen based on project requirements)
-    - **Authentication:** JSON Web Tokens (JWT) for authentication and authorization
-    - **Testing:** Unit tests written with unittest
-    - **Continuous Integration:** Integrated with CircleCI
-    - **Continuous Coverage:** Utilizes coverage tools to measure test coverage(coveralls)
+ - **Frontend:** HTML, CSS, JavaScript, React
+  - [Frontend with JS](https://github.com/kabuiya/myjournal)
+  - [Frontend with React](https://github.com/kabuiya/my-Journal)
+- **Backend:** Python, Flask RESTful
+- **Database:** PostgreSQL (chosen based on project requirements)
+- **Authentication:** JSON Web Tokens (JWT) for authentication and authorization
+- **Testing:** Unit tests written with unittest
+- **Continuous Integration:** Integrated with CircleCI
+- **Continuous Coverage:** Utilizes coverage tools to measure test coverage (coveralls), it's not working
 
 ## Getting Started:
 **To run this application locally, follow these steps:**
