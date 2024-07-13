@@ -34,8 +34,8 @@ Welcome to My Diary Project! This project aims to provide a simple and intuitive
 ## Technologies Used
 
     - **Frontend:** HTML, CSS, JavaScript, react 
-    [see fronted: with js](https://github.com/kabuiya/myjournal)
-    [see fronted: with react](https://github.com/kabuiya/my-Journal)
+    [[fronted: with js](https://github.com/kabuiya/myjournal)]
+    [[fronted: with react](https://github.com/kabuiya/my-Journal)]
     - **Backend:** Python, Flask RESTful
     - **Database:** PostgreSQL (chosen based on project requirements)
     - **Authentication:** JSON Web Tokens (JWT) for authentication and authorization
