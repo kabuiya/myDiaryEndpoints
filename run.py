@@ -20,10 +20,7 @@ from models import initialize_database
 from views.views import views_bp
 
 
-
-
 def create_app():
-
     app = Flask(__name__)
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
     app.config['FLASK_ENV'] = os.getenv('FLASK_ENV')
@@ -39,12 +36,14 @@ def create_app():
     with app.app_context():
         initialize_database()
 
-    CORS(app, origins=["http: // localhost: 5000"])
+    CORS(app, origins=["http://localhost:5000"])
+
     # CORS(app, origins=["https://diary-163ea.web.app/"], supports_credentials=True)
 
     return app
 
 
+app = create_app()
+
 if __name__ == "__main__":
-    app = create_app()
     app.run()
