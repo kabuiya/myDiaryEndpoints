@@ -20,17 +20,10 @@ from models import initialize_database
 from views.views import views_bp
 
 
-# Your existing route definitions and functions...
+
 
 def create_app():
-    """
-        create_app() -> Flask
 
-        Factory function to create and configure the Flask application.
-
-        Returns:
-        Flask: Configured Flask application instance.
-        """
     app = Flask(__name__)
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
     app.config['FLASK_ENV'] = os.getenv('FLASK_ENV')
@@ -47,6 +40,8 @@ def create_app():
         initialize_database()
 
     CORS(app, origins=["http: // localhost: 5000"])
+    # CORS(app, origins=["https://diary-163ea.web.app/"], supports_credentials=True)
+
     return app
 
 

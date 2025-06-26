@@ -6,3 +6,6 @@ htmlcov
 .dockerignore
 .Procfile
 .fly.toml
+__pycache__/
+*.pyc
+.venv/
