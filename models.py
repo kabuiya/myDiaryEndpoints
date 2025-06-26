@@ -1,6 +1,4 @@
 
-
-
 # models.py
 import psycopg2
 from flask import current_app
@@ -35,34 +33,36 @@ def initialize_database():
     conn = None  # Initialize connection to None
     try:
 
-        conn = psycopg2.connect(db_url)
-        cursor = conn.cursor()
+            conn = psycopg2.connect(db_url)
+            cursor = conn.cursor()
+            cursor.execute("DROP TABLE IF EXISTS BLACKLIST;")
+            cursor.execute("DROP TABLE IF EXISTS ENTRIES;")
+            cursor.execute("DROP TABLE IF EXISTS USERS;")
+            print("Attempting to create database tables if they do not exist...")
 
-        print("Attempting to create database tables if they do not exist...")
+            cursor.execute(
+                        '''CREATE TABLE IF NOT EXISTS USERS
+                            (ID SERIAL PRIMARY KEY     NOT NULL,
+                            USERNAME        VARCHAR(10)    UNIQUE NOT NULL,
+                            EMAIL_ADDRESS    TEXT  UNIQUE NOT NULL,
+                            PASSWORD_HASH        TEXT NOT NULL
+                            );''')
+            cursor.execute(
+                        '''CREATE TABLE IF NOT EXISTS ENTRIES
+                            (ID SERIAL PRIMARY KEY     NOT NULL,
+                            CONTENT          TEXT      NOT NULL,
+                            DATE             DATE DEFAULT CURRENT_DATE,
+                            OWNER         INT      references USERS(ID) ON DELETE CASCADE
+                            );''')
+            cursor.execute(
+                        '''CREATE TABLE IF NOT EXISTS BLACKLIST
+                            (TOKEN          TEXT      NOT NULL
+                            );''')
 
-        cursor.execute(
-                    '''CREATE TABLE IF NOT EXISTS USERS
-                        (ID SERIAL PRIMARY KEY     NOT NULL,
-                        USERNAME        VARCHAR(10)    UNIQUE NOT NULL,
-                        EMAIL_ADDRESS    TEXT  UNIQUE NOT NULL,
-                        PASSWORD_HASH        TEXT NOT NULL
-                        );''')
-        cursor.execute(
-                    '''CREATE TABLE IF NOT EXISTS ENTRIES
-                        (ID SERIAL PRIMARY KEY     NOT NULL,
-                        CONTENT          TEXT      NOT NULL,
-                        DATE             DATE DEFAULT CURRENT_DATE,
-                        OWNER         INT      references USERS(ID) ON DELETE CASCADE
-                        );''')
-        cursor.execute(
-                    '''CREATE TABLE IF NOT EXISTS BLACKLIST
-                        (TOKEN          TEXT      NOT NULL
-                        );''')
+            conn.commit()
+            cursor.close()
 
-        conn.commit()
-        cursor.close()
-
-        print("Database initialization complete: Tables checked/created successfully.")
+            print("Database initialization complete: Tables checked/created successfully.")
 
     except psycopg2.Error as e:
         print(f"PostgreSQL connection or query error: {e}")
