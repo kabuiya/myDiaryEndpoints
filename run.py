@@ -38,7 +38,7 @@ def create_app():
 
     # CORS(app, origins=["http://localhost:5000"])
 
-    CORS(app, origins=["https://diary-163ea.web.app/"], supports_credentials=True)
+    CORS(app, origins=["https://diary-163ea.web.app"], supports_credentials=True)
 
     return app
 
