@@ -6,17 +6,18 @@ import psycopg2.errors
 from flask import request, jsonify, Blueprint, current_app
 from flask.cli import load_dotenv
 from validate_email import validate_email
-from models import initialize_database, get_db_connection
+from models import get_db_connection
 
 load_dotenv()
 views_bp = Blueprint('views', __name__)
 
 
-# ------------------------- TOKEN UTILITIES -------------------------
-
 def check_blacklist(token):
     """Check if the JWT token is blacklisted."""
     conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Database connection failed'}), 500
+    cur = conn.cursor()
     with conn.cursor() as cur:
         cur.execute("SELECT TOKEN FROM BLACKLIST WHERE TOKEN = %s;", (token,))
         return cur.fetchone() is not None
@@ -59,8 +60,6 @@ def check_password(plaintext, hashed_password_hex):
     hashed_password_bytes = bytes.fromhex(hashed_password_hex[2:])
     return bcrypt.checkpw(plaintext.encode('utf-8'), hashed_password_bytes)
 
-
-# ------------------------- AUTHENTICATION -------------------------
 
 @views_bp.route("/api/v1/register", methods=['POST'])
 def user_registration():
@@ -144,8 +143,6 @@ def user_logout(user_id):
         return jsonify({'error': str(e)}), 500
 
 
-# ------------------------- PROFILE -------------------------
-
 @views_bp.route("/api/v1/profile", methods=['GET'])
 @token_required
 def user_profile(user_id):
@@ -197,7 +194,7 @@ def account_delete(user_id):
     return jsonify({'message': 'Account deleted'}), 200
 
 
-# ------------------------- ENTRIES -------------------------
+
 
 @views_bp.route("/api/v1/add_entries", methods=['POST'])
 @token_required
@@ -221,7 +218,7 @@ def post_entries(user_id):
 @token_required
 def get_entries(user_id):
     """Get all entries for the authenticated user."""
-    conn = initialize_database()
+    conn = get_db_connection()
     with conn.cursor() as cur:
         cur.execute('SELECT ID, CONTENT, ENTRY_DATE FROM ENTRIES WHERE OWNER = %s', (user_id,))
         entries = cur.fetchall()
@@ -232,7 +229,7 @@ def get_entries(user_id):
 @token_required
 def get_entry(user_id, entry_id):
     """Get a specific diary entry."""
-    conn = initialize_database()
+    conn = get_db_connection()
     with conn.cursor() as cur:
         cur.execute('SELECT * FROM ENTRIES WHERE ID = %s AND OWNER = %s', (entry_id, user_id))
         entry = cur.fetchone()
@@ -255,7 +252,7 @@ def update_entry(user_id, entry_id):
     if not content:
         return jsonify({'error': 'Content is required'}), 400
 
-    conn = initialize_database()
+    conn = get_db_connection()
     with conn.cursor() as cur:
         cur.execute('SELECT COUNT(*) FROM ENTRIES WHERE ID = %s AND OWNER = %s', (entry_id, user_id))
         if cur.fetchone()[0] == 0:
@@ -269,7 +266,7 @@ def update_entry(user_id, entry_id):
 @token_required
 def delete_entry(user_id, entry_id):
     """Delete a diary entry."""
-    conn = initialize_database()
+    conn = get_db_connection()
     with conn.cursor() as cur:
         cur.execute('SELECT COUNT(*) FROM ENTRIES WHERE ID = %s AND OWNER = %s', (entry_id, user_id))
         if cur.fetchone()[0] == 0:
