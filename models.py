@@ -3,6 +3,21 @@ import psycopg2
 from flask import current_app
 
 
+def get_db_connection():
+    db_url = current_app.config.get('DATABASE_URL')
+
+    if not db_url:
+        print("Error: DATABASE_URL is not set in Flask configuration.")
+        return None
+
+    try:
+        conn = psycopg2.connect(db_url)
+        return conn
+    except psycopg2.Error as e:
+        print(f"Database connection failed: {e}")
+        return None
+
+
 def initialize_database():
     """
     Initializes the database connection and creates tables if they don't exist.
