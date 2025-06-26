@@ -1,63 +1,60 @@
+# models.py
 import psycopg2
 from flask import current_app
-import os
-
-
-def get_db_connection():
-    if current_app.config['FLASK_ENV'] == 'testing':
-        if os.getenv('LOCAL'):
-            return psycopg2.connect(
-                dbname='testdb',
-                user='',
-                password='',
-                host='localhost',
-                port='5433'
-            )
-        return psycopg2.connect(
-            dbname='circle_test',
-            user='postgres',
-            password='',
-            host='localhost',
-            port='5433'
-
-        )
-    elif current_app.config['FLASK_ENV'] == 'production':
-        return psycopg2.connect(
-            dbname=current_app.config.get('DB_NAME'),
-            user=current_app.config.get('DB_USER'),
-            password=current_app.config.get('DB_PASSWORD'),
-            host=current_app.config.get('DB_HOST'),
-            port=current_app.config.get('DB_PORT')
-        )
-    else:
-        raise ValueError("Unknown FLASK_ENV")
 
 
 def initialize_database():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    # USER table
-    cur.execute(
-        '''CREATE TABLE IF NOT EXISTS USERS
-            (ID SERIAL PRIMARY KEY     NOT NULL,
-            USERNAME        VARCHAR(10)    UNIQUE NOT NULL,
-            EMAIL_ADDRESS    TEXT  UNIQUE NOT NULL,
-            PASSWORD_HASH        TEXT NOT NULL
-            );''')
-    # diary entry table
-    cur.execute(
-        '''CREATE TABLE IF NOT EXISTS ENTRIES
-            (ID SERIAL PRIMARY KEY     NOT NULL,
-            CONTENT          TEXT      NOT NULL,
-            DATE             DATE DEFAULT CURRENT_DATE,
-            OWNER         INT      references USERS(ID) ON DELETE CASCADE
-            );''')
-    # blacklisting tokens on logout
-    cur.execute(
-        '''CREATE TABLE IF NOT EXISTS BLACKLIST
-            (TOKEN          TEXT      NOT NULL
-            );''')
+    """
+    Initializes the database connection and creates tables if they don't exist.
+    This function will be called within the Flask application context.
+    """
+    db_url = current_app.config.get('DATABASE_URL')
 
-    conn.commit()
-    cur.close()  # Close curso  # Close connection
-    return conn
+    if not db_url:
+        print("Error: DATABASE_URL is not set in Flask configuration. Cannot initialize database.")
+        raise ValueError("DATABASE_URL environment variable is not set.")
+
+    conn = None  # Initialize connection to None
+    try:
+
+        conn = psycopg2.connect(db_url)
+        cursor = conn.cursor()
+
+        print("Attempting to create database tables if they do not exist...")
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(80) UNIQUE NOT NULL,
+                email VARCHAR(120) UNIQUE NOT NULL,
+                password_hash VARCHAR(128) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS diary_entries (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                content TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            );
+        """)
+
+        conn.commit()
+        cursor.close()
+        print("Database initialization complete: Tables checked/created successfully.")
+
+    except psycopg2.Error as e:
+        print(f"PostgreSQL connection or query error: {e}")
+
+        raise
+    except Exception as e:
+        print(f"An unexpected error occurred during database initialization: {e}")
+        raise
+    finally:
+        if conn:
+            conn.close()
+            print("Database connection closed.")
