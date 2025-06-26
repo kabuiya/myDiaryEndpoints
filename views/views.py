@@ -78,11 +78,11 @@ def user_registration():
 
     conn = get_db_connection()
     with conn.cursor() as cur:
-        cur.execute('SELECT COUNT(*) FROM USERS WHERE EMAIL_ADDRESS = %s', (email,))
+        cur.execute('SELECT COUNT(*) FROM USERS WHERE email = %s', (email,))
         if cur.fetchone()[0] > 0:
             return jsonify({'error': 'Email already exists'}), 400
 
-        cur.execute('SELECT COUNT(*) FROM USERS WHERE USERNAME = %s', (username,))
+        cur.execute('SELECT COUNT(*) FROM USERS WHERE username = %s', (username,))
         if cur.fetchone()[0] > 0:
             return jsonify({'error': 'Username already exists'}), 400
 
