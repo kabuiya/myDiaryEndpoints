@@ -38,7 +38,6 @@ def create_app():
 
     CORS(app, resources={r"/api/*": {
         "origins": [
-            "https://diary-163ea.web.app",
             "http://127.0.0.1:5500",
             "http://localhost:5000",
 
